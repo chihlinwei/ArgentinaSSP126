@@ -1,0 +1,7 @@
+"0","out <- addLayer(etopo2022, cmip6_2041_2060_exsd %>% subset(1:4)) %>% mask(eez) %>% as.data.frame(xy = TRUE) %>% na.omit"
+"0","out$Region <- cut(-out$layer, c(0, 200, 5000), labels=c(""Shelf"", ""Slope""))"
+"0",""
+"0","ggplot(data=out %>% gather(-x, -y, -layer, -Region, key = ""var"", value = ""value""))+"
+"0","  geom_violin(aes(x=Region, y=value))+"
+"0","  facet_wrap(~var, scales=""free"", nrow=1)+"
+"0","  labs(y=""Climate Change Hazards"")"
