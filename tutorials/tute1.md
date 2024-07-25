@@ -1,4 +1,4 @@
-Display seafloor climage change data
+Display seafloor climate change data
 ================
 Chih-Lin Wei
 2024-07-25

@@ -1,4 +1,4 @@
-Extract seafloor climage change data by coordinate
+Extract seafloor climate change data by coordinate
 ================
 Chih-Lin Wei
 2024-07-25
@@ -120,7 +120,7 @@ coordinates(loc) <- c("decimalLongitude", "decimalLatitude")
 me <- maxent(hist, loc)
 
 r <- addLayer(predict(me, hist), predict(me, proj1), predict(me, proj2))
-names(r) <- c("Year_1950_to_2000", "Year_2041_to_2080", "Year_2081_to_2100")
+names(r) <- c("Year_1950_to_2000", "Year_2041_to_2060", "Year_2081_to_2100")
 ```
 
 We can use the

@@ -1,5 +1,5 @@
 ---
-title: "Display seafloor climage change data"
+title: "Display seafloor climate change data"
 author: "Chih-Lin Wei"
 date: "`r Sys.Date()`"
 output: github_document

@@ -1,5 +1,5 @@
 ---
-title: "Extract seafloor climage change data by polygon"
+title: "Extract seafloor climate change data by polygon"
 author: "Chih-Lin Wei"
 date: "`r Sys.Date()`"
 output: github_document

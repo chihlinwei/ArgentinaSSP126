@@ -1,4 +1,4 @@
-Extract seafloor climage change data by polygon
+Extract seafloor climate change data by polygon
 ================
 Chih-Lin Wei
 2024-07-25
