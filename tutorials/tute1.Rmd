@@ -116,7 +116,7 @@ plot_fun <- function(r, colours=NULL, q_limits=c(0.001, 0.999)){
 }
 ```
 
-## Historical projections
+# Historical projections
 
 Here we used new function to plot the historical projections of export POC flux (epc), dissolved oxygen concentration (o2), pH values (ph), and potential temperature (thetao) from 1950 to 2000.
 
@@ -124,7 +124,7 @@ Here we used new function to plot the historical projections of export POC flux 
 plot_fun(r=cmip6_1950_2000_av %>% subset(1:4), q_limits = c(0, 1))
 ```
 
-## Historical variability
+# Historical variability
 
 The historical standard deviation of export POC flux (epc), dissolved oxygen concentration (o2), pH values (ph), and potential temperature (thetao) from 1950 to 2000 can also be displayed in the same manner.
 
@@ -132,7 +132,7 @@ The historical standard deviation of export POC flux (epc), dissolved oxygen con
 plot_fun(cmip6_1950_2000_sd %>% subset(1:4), q_limits = c(0, 1))
 ```
 
-## Future projections
+# Future projections
 
 The seafloor projections from 2041 to 2060 can be plotted in the same way using the ensemble average.
 
@@ -140,7 +140,7 @@ The seafloor projections from 2041 to 2060 can be plotted in the same way using 
 plot_fun(cmip6_2041_2060_av %>% subset(1:4), q_limits = c(0, 1))
 ```
 
-## Climate changes between future and historical projections
+# Climate changes between future and historical projections
 
 We then plot the climate changes as the the difference between 1950 and 2000 and 2041 to 2060. Here, we should modify the color key to visualize the difference better.
 
@@ -148,7 +148,7 @@ We then plot the climate changes as the the difference between 1950 and 2000 and
 plot_fun(cmip6_2041_2060_ch %>% subset(1:4), q_limits = c(0, 1))
 ```
 
-## Climate change hazards
+# Climate change hazards
 
 The custom plot function can visually display the relationship between climate change hazards and historical standard deviation. The color indicates the degree of climate change in terms of historical variability.
 
@@ -156,7 +156,7 @@ The custom plot function can visually display the relationship between climate c
 plot_fun(r=cmip6_2041_2060_exsd %>% subset(1:4))
 ```
 
-## Time of emergence of climate changes
+# Time of emergence of climate changes
 
 We can identify the years when climate changes exceed two times the historical standard deviation (or the year when the value of climate change hazards > 2). We use two times the standard deviation because in a roughly normal data set, values within one standard deviation of the mean make up about 68% of the set, while values within two standard deviations make up about 95%.
 
@@ -183,7 +183,7 @@ ggplot(all) +
       theme_bw() %+replace% theme(legend.position = "top", legend.key.width =  unit(1, 'cm'))
 ```
 
-## Cumulative impact of climate change hazards
+# Cumulative impact of climate change hazards
 
 Another application involves calculating the cumulative impacts of climate change hazards. These hazards are caused by declining export POC flux, deoxygenation, ocean acidification, and ocean warming, and are considered to have cumulative negative impacts. On the contrary, increasing export POC flux, oxygenation, ocean basification, and ocean cooling can be considered to have cumulative positive impacts. Here, we have also created a function to calculate cumulative negative and positive impacts caused by climate change hazards.
 
@@ -210,7 +210,7 @@ cum_imp <- function(r){
 plot_fun(r=cum_imp(cmip6_2041_2060_exsd))
 ```
 
-## Climate velocity
+# Climate velocity
 
 An important factor for the survival of species is how quickly they need to move to adjust to current environmental conditions and keep up with climate changes. Local climate velocity can be calculated by measuring the rate of change of a specific variable (like temperature) over time and dividing it by the corresponding spatial gradient of that variable within a 3x3 area. Areas with low local climate velocities may be good candidates for protection, as they could potentially act as climatic refuges and are often associated with high levels of endemic species. It's important to note that in deep seafloor environments, like the abyssal plain, the spatial gradient may be small, resulting in high climate velocities. In our example, we display the average seafloor gradient-based climate velocity magnitudes from 2041 to 2060.
 
@@ -218,7 +218,7 @@ An important factor for the survival of species is how quickly they need to move
 plot_fun(cmip6_2041_2060_voccMeg %>% subset(1:4), q_limits=c(0.01, 0.99))
 ```
 
-## Cumulative impact based on climate velocity
+# Cumulative impact based on climate velocity
 
 We can calculate the overall negative impact of climate velocity by taking into account the impacts of decreasing food supply, deoxygenation, acidification, and warming, as well as the positive impact of increasing food supply, oxygen levels, ocean basification, and cooling. Conversely, the increase in export POC flux, oxygen levels, ocean basification, and ocean cooling can be considered as cumulative positive impacts.
 

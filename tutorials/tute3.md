@@ -10,7 +10,7 @@ library(dplyr)
 library(tidyr)
 ```
 
-## Species occurrence data
+# Species occurrence data
 
 We first download Demospongiae occurrence data from
 [OBIS](https://obis.org/area/7) using the
@@ -67,7 +67,7 @@ ggplot(bathy) +
 
 ![](tute3_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
 
-## Environmental predictors
+# Environmental predictors
 
 Besides extracting data for each coordinate, we can also apply these
 data for simple habitat suitability modeling using
@@ -98,7 +98,7 @@ proj2 <- addLayer(etopo2022, cmip6_2081_2100_av) %>% mask(eez)
 names(proj2)[-1] <- gsub("_av_2081_2100", "", names(cmip6_2081_2100_av))
 ```
 
-## Species distribution modeling
+# Species distribution modeling
 
 The commands in
 [Maxent](https://www.rdocumentation.org/packages/dismo/versions/1.3-14/topics/maxent)
@@ -146,7 +146,7 @@ raster::extract(hist, loc) %>% head(10) %>% kable(digits=3)
 |        NA |     NA |    NA |    NA |     NA |   NA |   NA |    NA |         NA |         NA |      NA |      NA |
 | -1136.211 | 25.874 | 0.211 | 7.952 |  5.026 |    0 |    0 | 0.117 |      0.104 |      0.064 |   1.223 |   1.702 |
 
-## Habitat suitability projections
+# Habitat suitability projections
 
 Finally, we map the projected habitat suitability of Demospongiae for
 the years 1950 to 2000, 2041 to 2060, and 2081 to 2100. We can see that

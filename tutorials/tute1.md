@@ -159,7 +159,7 @@ plot_fun <- function(r, colours=NULL, q_limits=c(0.001, 0.999)){
 }
 ```
 
-## Historical projections
+# Historical projections
 
 Here we used new function to plot the historical projections of export
 POC flux (epc), dissolved oxygen concentration (o2), pH values (ph), and
@@ -171,7 +171,7 @@ plot_fun(r=cmip6_1950_2000_av %>% subset(1:4), q_limits = c(0, 1))
 
 ![](tute1_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
 
-## Historical variability
+# Historical variability
 
 The historical standard deviation of export POC flux (epc), dissolved
 oxygen concentration (o2), pH values (ph), and potential temperature
@@ -183,7 +183,7 @@ plot_fun(cmip6_1950_2000_sd %>% subset(1:4), q_limits = c(0, 1))
 
 ![](tute1_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
-## Future projections
+# Future projections
 
 The seafloor projections from 2041 to 2060 can be plotted in the same
 way using the ensemble average.
@@ -194,7 +194,7 @@ plot_fun(cmip6_2041_2060_av %>% subset(1:4), q_limits = c(0, 1))
 
 ![](tute1_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
-## Climate changes between future and historical projections
+# Climate changes between future and historical projections
 
 We then plot the climate changes as the the difference between 1950 and
 2000 and 2041 to 2060. Here, we should modify the color key to visualize
@@ -206,7 +206,7 @@ plot_fun(cmip6_2041_2060_ch %>% subset(1:4), q_limits = c(0, 1))
 
 ![](tute1_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
-## Climate change hazards
+# Climate change hazards
 
 The custom plot function can visually display the relationship between
 climate change hazards and historical standard deviation. The color
@@ -219,7 +219,7 @@ plot_fun(r=cmip6_2041_2060_exsd %>% subset(1:4))
 
 ![](tute1_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
-## Time of emergence of climate changes
+# Time of emergence of climate changes
 
 We can identify the years when climate changes exceed two times the
 historical standard deviation (or the year when the value of climate
@@ -257,7 +257,7 @@ ggplot(all) +
 
 ![](tute1_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
-## Cumulative impact of climate change hazards
+# Cumulative impact of climate change hazards
 
 Another application involves calculating the cumulative impacts of
 climate change hazards. These hazards are caused by declining export POC
@@ -293,7 +293,7 @@ plot_fun(r=cum_imp(cmip6_2041_2060_exsd))
 
 ![](tute1_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
-## Climate velocity
+# Climate velocity
 
 An important factor for the survival of species is how quickly they need
 to move to adjust to current environmental conditions and keep up with
@@ -314,7 +314,7 @@ plot_fun(cmip6_2041_2060_voccMeg %>% subset(1:4), q_limits=c(0.01, 0.99))
 
 ![](tute1_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
-## Cumulative impact based on climate velocity
+# Cumulative impact based on climate velocity
 
 We can calculate the overall negative impact of climate velocity by
 taking into account the impacts of decreasing food supply,

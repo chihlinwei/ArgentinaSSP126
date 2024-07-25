@@ -12,7 +12,7 @@ library(tidyr)
 library(RColorBrewer)
 ```
 
-## Extract data by Argentina EEZ polygon
+# Extract data by Argentina EEZ polygon
 
 In this analysis, we want to extract and display the seafloor climate
 change data for [Argentina
@@ -93,7 +93,7 @@ plot_fun <- function(r, colours=NULL, q_limits=c(0.001, 0.999)){
 }
 ```
 
-## Climate change hazards
+# Climate change hazards
 
 For example, we can mask the climate change hazards between 2041 and
 2060 by the Argentina EEZ polygon. The following maps show the degree of
@@ -122,7 +122,7 @@ ggplot(data=out %>% gather(-x, -y, -layer, -Region, key = "var", value = "value"
 
 ![](tute2_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
-## Time of emergence of climate changes
+# Time of emergence of climate changes
 
 The following maps and violin plots illustrate when climate changes
 exceed two times the historical standard deviation (or the year when the
@@ -184,7 +184,7 @@ p2+p1+plot_layout(widths = c(1, 2))
 
 ![](tute2_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
-## Cumulative impact of climate change hazards
+# Cumulative impact of climate change hazards
 
 Another application involves calculating the cumulative impacts of
 climate change hazards. The negative hazards are caused by declining
@@ -231,7 +231,7 @@ ggplot(data=out %>% gather(-x, -y, -layer, -Region, key = "var", value = "value"
 
 ![](tute2_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
-## Climate velocity
+# Climate velocity
 
 An important factor for the survival of species is how quickly they need
 to move to adjust to current environmental conditions and keep up with
@@ -265,7 +265,7 @@ ggplot(data=out %>% gather(-x, -y, -layer, -Region, key = "var", value = "value"
 
 ![](tute2_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
 
-## Cumulative impact based on climate velocity
+# Cumulative impact based on climate velocity
 
 We can calculate the overall negative impact of climate velocity by
 taking into account the impacts of decreasing food supply,
