@@ -10,7 +10,9 @@ library(dplyr)
 library(tidyr)
 ```
 
-For example, we first download Demospongiae occurrence data from
+## Species occurrence data
+
+We first download Demospongiae occurrence data from
 [OBIS](https://obis.org/area/7) using the
 [occurrence](https://www.rdocumentation.org/packages/robis/versions/2.11.3/topics/occurrence)
 function from the
@@ -22,7 +24,6 @@ Here, let’s look at the first ten records as an example.
 ``` r
 library(robis)
 library(knitr)
-library(kableExtra)
 
 occ <- occurrence(scientificname = "Demospongiae", areaid = 7)
 head(occ[, c(1:3, 5:6)], 10) %>% kable
@@ -66,6 +67,8 @@ ggplot(bathy) +
 
 ![](tute3_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
 
+## Environmental predictors
+
 Besides extracting data for each coordinate, we can also apply these
 data for simple habitat suitability modeling using
 [Maxent](https://www.rdocumentation.org/packages/dismo/versions/1.3-14/topics/maxent)
@@ -94,6 +97,8 @@ names(proj1)[-1] <- gsub("_av_2041_2060", "", names(cmip6_2041_2060_av))
 proj2 <- addLayer(etopo2022, cmip6_2081_2100_av) %>% mask(eez)
 names(proj2)[-1] <- gsub("_av_2081_2100", "", names(cmip6_2081_2100_av))
 ```
+
+## Species distribution modeling
 
 The commands in
 [Maxent](https://www.rdocumentation.org/packages/dismo/versions/1.3-14/topics/maxent)
@@ -141,12 +146,14 @@ raster::extract(hist, loc) %>% head(10) %>% kable(digits=3)
 |        NA |     NA |    NA |    NA |     NA |   NA |   NA |    NA |         NA |         NA |      NA |      NA |
 | -1136.211 | 25.874 | 0.211 | 7.952 |  5.026 |    0 |    0 | 0.117 |      0.104 |      0.064 |   1.223 |   1.702 |
 
-inally, we map the projected habitat suitability of Demospongiae for the
-years 1950 to 2000, 2041 to 2060, and 2081 to 2100. We can see that
+## Habitat suitability projections
+
+Finally, we map the projected habitat suitability of Demospongiae for
+the years 1950 to 2000, 2041 to 2060, and 2081 to 2100. We can see that
 habitat suitability will decrease toward the end of the 21st century.
 
 ``` r
-dat <- r%>% as.data.frame(xy = TRUE) %>% na.omit %>% gather(-x, -y, key = "var", value = "value")
+dat <- r %>% as.data.frame(xy = TRUE) %>% na.omit %>% gather(-x, -y, key = "var", value = "value")
 ggplot(dat) +
   geom_raster(aes(x=x, y=y, fill=value))+
   geom_polygon(data=arg, aes(x=X, y=Y, group=PID), fill="bisque2", colour="transparent")+

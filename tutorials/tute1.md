@@ -3,17 +3,19 @@ Display seafloor climage change data
 Chih-Lin Wei
 2024-07-25
 
+# Sealfoor climate change dataset
+
 This data package comprises ensemble model averages of CMIP6 historical
-and ssp126 climate change projections for the seafloor within
+and future climate change projections for the seafloor within
 Argentina’s Exclusive Economic Zone (EEZ). Yearly means were calculated
 from five climate models: GFDL-ESM4, IPSL-CM6A-LR, MPI-ESM1-2-LR,
 CNRM-ESM2-1, and NorESM2-MM, as part of the Coupled Models
 Intercomparison Project Phase 6 (CMIP6). The ensemble averages were
-computed for three time periods: 1950 to 2000 (historical), 2041 to 2060
-(ssp126), and 2081 to 2100 (ssp126). The export flux of particulate
-organic carbon (POC) at the seafloor was derived from export production
-at 100 meters depth (epc100) using the Martin curve (Martin et al.,
-1987). The equation for the export POC flux is given
+computed for three time periods: 1950 to 2000, 2041 to 2060, and 2081 to
+2100. The export flux of particulate organic carbon (POC) at the
+seafloor was derived from export production at 100 meters depth (epc100)
+using the Martin curve (Martin et al., 1987). The equation for the
+export POC flux is given
 by:$Flux = epc100*(depth/export\:depth)^{-0.858}$.
 
 The depth information is based on the
@@ -40,6 +42,8 @@ historical variability. This approach allows us to standardize climate
 change hazards across different variables, using their historical
 variability as a common unit. For instance, a specific variable’s
 climate hazard could be 10 or 100 times its historical variability.
+
+# Display the data using custom plot function
 
 This vignette provides some simple examples to visualize the data
 layers. First, we should load necessary R packages.
@@ -155,6 +159,8 @@ plot_fun <- function(r, colours=NULL, q_limits=c(0.001, 0.999)){
 }
 ```
 
+## Historical projections
+
 Here we used new function to plot the historical projections of export
 POC flux (epc), dissolved oxygen concentration (o2), pH values (ph), and
 potential temperature (thetao) from 1950 to 2000.
@@ -164,6 +170,8 @@ plot_fun(r=cmip6_1950_2000_av %>% subset(1:4), q_limits = c(0, 1))
 ```
 
 ![](tute1_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+
+## Historical variability
 
 The historical standard deviation of export POC flux (epc), dissolved
 oxygen concentration (o2), pH values (ph), and potential temperature
@@ -175,6 +183,8 @@ plot_fun(cmip6_1950_2000_sd %>% subset(1:4), q_limits = c(0, 1))
 
 ![](tute1_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
+## Future projections
+
 The seafloor projections from 2041 to 2060 can be plotted in the same
 way using the ensemble average.
 
@@ -183,6 +193,8 @@ plot_fun(cmip6_2041_2060_av %>% subset(1:4), q_limits = c(0, 1))
 ```
 
 ![](tute1_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+
+## Climate changes between future and historical projections
 
 We then plot the climate changes as the the difference between 1950 and
 2000 and 2041 to 2060. Here, we should modify the color key to visualize
@@ -194,6 +206,8 @@ plot_fun(cmip6_2041_2060_ch %>% subset(1:4), q_limits = c(0, 1))
 
 ![](tute1_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
+## Climate change hazards
+
 The custom plot function can visually display the relationship between
 climate change hazards and historical standard deviation. The color
 indicates the degree of climate change in terms of historical
@@ -204,6 +218,8 @@ plot_fun(r=cmip6_2041_2060_exsd %>% subset(1:4))
 ```
 
 ![](tute1_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+
+## Time of emergence of climate changes
 
 We can identify the years when climate changes exceed two times the
 historical standard deviation (or the year when the value of climate
@@ -241,6 +257,8 @@ ggplot(all) +
 
 ![](tute1_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
+## Cumulative impact of climate change hazards
+
 Another application involves calculating the cumulative impacts of
 climate change hazards. These hazards are caused by declining export POC
 flux, deoxygenation, ocean acidification, and ocean warming, and are
@@ -275,6 +293,8 @@ plot_fun(r=cum_imp(cmip6_2041_2060_exsd))
 
 ![](tute1_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
+## Climate velocity
+
 An important factor for the survival of species is how quickly they need
 to move to adjust to current environmental conditions and keep up with
 climate changes. Local climate velocity can be calculated by measuring
@@ -293,6 +313,8 @@ plot_fun(cmip6_2041_2060_voccMeg %>% subset(1:4), q_limits=c(0.01, 0.99))
 ```
 
 ![](tute1_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+
+## Cumulative impact based on climate velocity
 
 We can calculate the overall negative impact of climate velocity by
 taking into account the impacts of decreasing food supply,
