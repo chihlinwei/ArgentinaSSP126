@@ -1,7 +1,7 @@
 Extract seafloor climate change data by coordinate
 ================
 Chih-Lin Wei
-2024-07-25
+2024-07-26
 
 ``` r
 library(ArgentinaSSP126)
@@ -12,35 +12,59 @@ library(tidyr)
 
 # Species occurrence data
 
-We first download Demospongiae occurrence data from
+We first download Argentine hake and Demospongiae occurrence data from
 [OBIS](https://obis.org/area/7) using the
 [occurrence](https://www.rdocumentation.org/packages/robis/versions/2.11.3/topics/occurrence)
 function from the
 [robis](https://www.rdocumentation.org/packages/robis/versions/2.11.3)
 package. You may choose any other species from
 [OBIS](https://obis.org/area/7) and no. 7 is the area ID for Argentina.
-Here, let’s look at the first ten records as an example.
 
 ``` r
 library(robis)
-library(knitr)
 
-occ <- occurrence(scientificname = "Demospongiae", areaid = 7)
-head(occ[, c(1:3, 5:6)], 10) %>% kable
+sponge <- occurrence(scientificname = "Demospongiae", areaid = 7)
+hake <- occurrence(scientificname = "Merluccius hubbsi", areaid = 7)
 ```
 
-| basisOfRecord    | decimalLatitude | decimalLongitude | occurrenceStatus | scientificName                          |
-|:-----------------|----------------:|-----------------:|:-----------------|:----------------------------------------|
-| HumanObservation |       -38.01000 |        -57.08000 | Presence         | Lissodendoryx (Ectyodoryx) nobilis      |
-| HumanObservation |       -44.21000 |        -65.11000 | Presence         | Trachytedania spinata                   |
-| HumanObservation |       -42.64083 |        -64.24525 | NA               | Demospongiae                            |
-| HumanObservation |       -42.62378 |        -64.26614 | NA               | Clathria                                |
-| HumanObservation |       -52.50000 |        -67.23300 | Presence         | Tedania (Tedania)                       |
-| HumanObservation |       -42.62406 |        -64.26022 | NA               | Demospongiae                            |
-| HumanObservation |       -37.28330 |        -53.86670 | NA               | Latrunculia (Aciculatrunculia) apicalis |
-| HumanObservation |       -42.62406 |        -64.26022 | NA               | Clathria                                |
-| HumanObservation |       -53.83330 |        -67.66670 | present          | Haliclona (Reniera) topsenti            |
-| HumanObservation |       -37.28330 |        -53.86670 | Presence         | Semisuberites cribrosa                  |
+Here, let’s look at the first ten records of the Argentine hake and
+Demospongiae occurrence data.
+
+``` r
+library(knitr)
+
+head(hake[, c(6:7, 21)], 10) %>% kable
+```
+
+| decimalLatitude | decimalLongitude | scientificName    |
+|----------------:|-----------------:|:------------------|
+|       -45.63333 |        -66.11667 | Merluccius hubbsi |
+|       -45.65000 |        -66.35000 | Merluccius hubbsi |
+|       -45.30000 |        -65.68333 | Merluccius hubbsi |
+|       -45.09917 |        -65.74970 | Merluccius hubbsi |
+|       -45.30000 |        -65.53333 | Merluccius hubbsi |
+|       -45.76667 |        -64.95000 | Merluccius hubbsi |
+|       -46.61667 |        -66.88333 | Merluccius hubbsi |
+|       -45.08333 |        -65.80000 | Merluccius hubbsi |
+|       -46.01667 |        -65.53333 | Merluccius hubbsi |
+|       -45.28333 |        -65.25000 | Merluccius hubbsi |
+
+``` r
+head(sponge[, c(2:3, 6)], 10) %>% kable
+```
+
+| decimalLatitude | decimalLongitude | scientificName                          |
+|----------------:|-----------------:|:----------------------------------------|
+|       -38.01000 |        -57.08000 | Lissodendoryx (Ectyodoryx) nobilis      |
+|       -44.21000 |        -65.11000 | Trachytedania spinata                   |
+|       -42.64083 |        -64.24525 | Demospongiae                            |
+|       -42.62378 |        -64.26614 | Clathria                                |
+|       -52.50000 |        -67.23300 | Tedania (Tedania)                       |
+|       -42.62406 |        -64.26022 | Demospongiae                            |
+|       -37.28330 |        -53.86670 | Latrunculia (Aciculatrunculia) apicalis |
+|       -42.62406 |        -64.26022 | Clathria                                |
+|       -53.83330 |        -67.66670 | Haliclona (Reniera) topsenti            |
+|       -37.28330 |        -53.86670 | Semisuberites cribrosa                  |
 
 There are a total of 2617 occurrence records within the [Argentina
 EEZ](https://marineregions.org/gazetteer.php?p=details&id=8466). We can
@@ -50,6 +74,7 @@ raster to see the data distribution.
 
 ``` r
 bathy <- etopo2022 %>% mask(eez) %>% as.data.frame(xy = TRUE) %>% na.omit
+occ <- rbind(cbind(hake[, c(6:7, 21)], Taxa="Argentine hake"), cbind(sponge[, c(2:3, 6)], Taxa="Demosponge"))
 ggplot(bathy) +
   geom_raster(aes(x=x, y=y, fill=-layer))+
   geom_polygon(data=arg, aes(x=X, y=Y, group=PID), fill="bisque2", colour="transparent")+
@@ -57,6 +82,7 @@ ggplot(bathy) +
   geom_contour(data=bathy, aes(x=x, y=y, z=layer), breaks=-200, linetype=2, colour="gray50")+
   geom_contour(data=bathy, aes(x=x, y=y, z=layer), breaks=-4000, linetype=1, colour="gray50")+
   geom_point(data=occ, aes(x=decimalLongitude, y=decimalLatitude), size=0.8)+
+  facet_wrap(~Taxa)+
   scale_fill_gradientn(colours=terrain.colors(7))+
   scale_x_continuous(expand = expansion(mult = 0))+
   scale_y_continuous(expand = expansion(mult = 0))+
@@ -65,7 +91,7 @@ ggplot(bathy) +
   theme_bw() %+replace% theme(legend.position = "right", legend.key.width =  unit(0.5, 'cm'))
 ```
 
-![](tute3_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+![](tute3_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
 
 # Environmental predictors
 
@@ -115,22 +141,44 @@ and Elith (2023)](https://rspatial.org/raster/sdm/raster_SDM.pdf).
 ``` r
 library(dismo)
 
-loc <- occ[, c("decimalLongitude", "decimalLatitude")]
-coordinates(loc) <- c("decimalLongitude", "decimalLatitude")
-me <- maxent(hist, loc)
+coordinates(occ) <- c("decimalLongitude", "decimalLatitude")
 
-r <- addLayer(predict(me, hist), predict(me, proj1), predict(me, proj2))
-names(r) <- c("Year_1950_to_2000", "Year_2041_to_2060", "Year_2081_to_2100")
+# Maxnet modeling for Argentine hake
+me1 <- maxent(hist, subset(occ, Taxa=="Argentine hake"))
+r1 <- addLayer(predict(me1, hist), predict(me1, proj1), predict(me1, proj2))
+names(r1) <- c("Year_1950_to_2000", "Year_2041_to_2060", "Year_2081_to_2100")
+
+# Maxnet modeling for demosponge
+me2 <- maxent(hist, subset(occ, Taxa=="Demosponge"))
+r2 <- addLayer(predict(me2, hist), predict(me2, proj1), predict(me2, proj2))
+names(r2) <- c("Year_1950_to_2000", "Year_2041_to_2060", "Year_2081_to_2100")
 ```
 
 We can use the
 [extract](https://www.rdocumentation.org/packages/raster/versions/3.6-23/topics/extract)
 function to take a quick look at the historical predictors used in the
-model. This predictor table is corresponded to the previous Demospongiae
-occurrence table.
+model. This predictor table is corresponded to the previous Argentine
+hake and Demospongiae occurrence table.
 
 ``` r
-raster::extract(hist, loc) %>% head(10) %>% kable(digits=3)
+raster::extract(hist, subset(occ, Taxa=="Argentine hake")) %>% head(10) %>% kable(digits=3)
+```
+
+|   layer |    epc |    o2 |    ph | thetao | arag | calc |   co3 | co3satarag | co3satcalc | aragsat | calcsat |
+|--------:|-------:|------:|------:|-------:|-----:|-----:|------:|-----------:|-----------:|--------:|--------:|
+| -94.252 | 78.079 | 0.269 | 8.068 |  7.812 |    0 |    0 | 0.133 |      0.069 |      0.043 |   2.280 |   2.523 |
+| -93.348 | 80.378 | 0.269 | 8.068 |  7.784 |    0 |    0 | 0.132 |      0.069 |      0.043 |   2.270 |   2.520 |
+| -96.112 | 81.301 | 0.271 | 8.070 |  7.898 |    0 |    0 | 0.133 |      0.069 |      0.043 |   2.271 |   2.532 |
+| -60.670 | 77.979 | 0.271 | 8.071 |  7.987 |    0 |    0 | 0.134 |      0.069 |      0.043 |   2.278 |   2.546 |
+| -96.112 | 81.301 | 0.271 | 8.070 |  7.898 |    0 |    0 | 0.133 |      0.069 |      0.043 |   2.271 |   2.532 |
+| -89.512 | 82.104 | 0.274 | 8.066 |  7.295 |    0 |    0 | 0.129 |      0.069 |      0.043 |   2.198 |   2.457 |
+| -73.043 | 89.896 | 0.271 | 8.070 |  7.530 |    0 |    0 | 0.132 |      0.069 |      0.043 |   2.259 |   2.521 |
+| -42.596 | 78.423 | 0.271 | 8.071 |  8.048 |    0 |    0 | 0.134 |      0.069 |      0.043 |   2.274 |   2.542 |
+| -83.863 | 82.649 | 0.272 | 8.067 |  7.532 |    0 |    0 | 0.131 |      0.069 |      0.043 |   2.241 |   2.481 |
+| -89.355 | 82.644 | 0.272 | 8.070 |  7.813 |    0 |    0 | 0.133 |      0.069 |      0.043 |   2.251 |   2.528 |
+
+``` r
+raster::extract(hist, subset(occ, Taxa=="Demosponge")) %>% head(10) %>% kable(digits=3)
 ```
 
 |     layer |    epc |    o2 |    ph | thetao | arag | calc |   co3 | co3satarag | co3satcalc | aragsat | calcsat |
@@ -148,19 +196,18 @@ raster::extract(hist, loc) %>% head(10) %>% kable(digits=3)
 
 # Habitat suitability projections
 
-Finally, we map the projected habitat suitability of Demospongiae for
-the years 1950 to 2000, 2041 to 2060, and 2081 to 2100. We can see that
-habitat suitability will decrease toward the end of the 21st century.
+Finally, we map the projected habitat suitability of Argentine hake for
+the years 1950 to 2000, 2041 to 2060, and 2081 to 2100.
 
 ``` r
-dat <- r %>% as.data.frame(xy = TRUE) %>% na.omit %>% gather(-x, -y, key = "var", value = "value")
+dat <- r1 %>% as.data.frame(xy = TRUE) %>% na.omit %>% gather(-x, -y, key = "var", value = "value")
 ggplot(dat) +
   geom_raster(aes(x=x, y=y, fill=value))+
   geom_polygon(data=arg, aes(x=X, y=Y, group=PID), fill="bisque2", colour="transparent")+
   geom_polygon(data=fortify(eez), aes(x=long, y=lat, group=id), fill="transparent", colour="red")+
   geom_contour(data=bathy, aes(x=x, y=y, z=layer), breaks=-200, linetype=2, colour="gray50")+
   geom_contour(data=bathy, aes(x=x, y=y, z=layer), breaks=-4000, linetype=1, colour="gray50")+
-  geom_point(data=occ, aes(x=decimalLongitude, y=decimalLatitude), size=0.5)+
+  geom_point(data=hake, aes(x=decimalLongitude, y=decimalLatitude), size=0.2)+
   facet_wrap(~var, nrow=1)+
   scale_fill_gradientn(colours=jet.colors(10))+
   scale_x_continuous(expand = expansion(mult = 0))+
@@ -170,4 +217,27 @@ ggplot(dat) +
   theme_bw() %+replace% theme(legend.position = "right", legend.key.width =  unit(0.5, 'cm'))
 ```
 
-![](tute3_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](tute3_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+
+Habitat suitability of Demosponge for the years 1950 to 2000, 2041 to
+2060, and 2081 to 2100
+
+``` r
+dat <- r2 %>% as.data.frame(xy = TRUE) %>% na.omit %>% gather(-x, -y, key = "var", value = "value")
+ggplot(dat) +
+  geom_raster(aes(x=x, y=y, fill=value))+
+  geom_polygon(data=arg, aes(x=X, y=Y, group=PID), fill="bisque2", colour="transparent")+
+  geom_polygon(data=fortify(eez), aes(x=long, y=lat, group=id), fill="transparent", colour="red")+
+  geom_contour(data=bathy, aes(x=x, y=y, z=layer), breaks=-200, linetype=2, colour="gray50")+
+  geom_contour(data=bathy, aes(x=x, y=y, z=layer), breaks=-4000, linetype=1, colour="gray50")+
+  geom_point(data=sponge, aes(x=decimalLongitude, y=decimalLatitude), size=0.2)+
+  facet_wrap(~var, nrow=1)+
+  scale_fill_gradientn(colours=jet.colors(10))+
+  scale_x_continuous(expand = expansion(mult = 0))+
+  scale_y_continuous(expand = expansion(mult = 0))+
+  labs(x=NULL, y=NULL, fill="Habitat\nSuitability")+
+  coord_fixed(1.52)+
+  theme_bw() %+replace% theme(legend.position = "right", legend.key.width =  unit(0.5, 'cm'))
+```
+
+![](tute3_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
