@@ -25,3 +25,10 @@ devtools::install_github("chihlinwei/ArgentinaSSP126", dependencies = TRUE)
 library(ArgentinaSSP126)
 ```
 
+### License
+GNU Affero General Public License v3.0
+
+### Tutorials
+* Wei, C.-L. (2024) [Display seafloor climage change data](https://github.com/chihlinwei/ArgentinaSSP126/blob/main/tutorials/tute1.md)
+* Wei, C.-L. (2024) [Extract seafloor climage change data by polygon](https://github.com/chihlinwei/ArgentinaSSP126/blob/main/tutorials/tute2.md)
+* Wei, C.-L. (2024) [Extract seafloor climage change data by coordinate](https://github.com/chihlinwei/ArgentinaSSP126/blob/main/tutorials/tute3.md)
