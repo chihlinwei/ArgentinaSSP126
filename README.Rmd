@@ -1,0 +1,29 @@
+---
+title: "Data package for seafloor climage change (ArgentinaSSP126)"
+author: "Chih-Lin Wei"
+date: "`r Sys.Date()`"
+output: 
+  html_document: 
+    smart: false
+    keep_md: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,  eval=FALSE)
+```
+
+# Installation
+
+### To install the package, open R and type:
+
+```{r}
+install.packages("devtools")
+```
+
+### Then, you can install ArgentinaSSP126:
+
+```{r}
+devtools::install_github("chihlinwei/ArgentinaSSP126", dependencies = TRUE)
+library(ArgentinaSSP126)
+```
+

@@ -22,5 +22,4 @@
 #' }
 #' @source \url{https://esgf-node.llnl.gov/search/esgf-llnl/}
 #' @name cmip6_2081_2100_exsd
-#' @examples
 NULL

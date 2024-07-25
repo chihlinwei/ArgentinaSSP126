@@ -1,1 +1,0 @@
-"0","plot_fun(r=cmip6_2041_2060_exsd %>% subset(1:4) %>% mask(eez))"

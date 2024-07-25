@@ -50,7 +50,7 @@
 #'     scale_x_continuous(expand = expansion(mult = 0))+
 #'     scale_y_continuous(expand = expansion(mult = 0))+
 #'     labs(x="Longitude", y="Latitude", fill="")+
-#'     coord_fixed()+
+#'     coord_fixed(1.52)+
 #'     facet_wrap(~ var) +
 #'     theme_bw()
 #'     })

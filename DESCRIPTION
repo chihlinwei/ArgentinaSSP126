@@ -6,9 +6,9 @@ Author: Chih-Lin Wei
 Maintainer: Chih-Lin Wei <chihlinwei@gmail.com>
 Description: This package containing CMIP6 historical and SSP126 climate change projection.
 VignetteBuilder: knitr
-Suggests: knitr, rmarkdown
-Depends: raster, lattice, ggplot2, dplyr, patchwork, tidyr, RColorBrewer
-Imports: raster, lattice, ggplot2, dplyr, patchwork, tidyr, RColorBrewer
+Suggests: knitr, rmarkdown, dplyr, patchwork, tidyr, RColorBrewer, robis
+Depends: raster
+Imports: raster
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
