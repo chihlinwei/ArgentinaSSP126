@@ -1,0 +1,19 @@
+#' Global distribution of cold-water corals
+#'
+#' Global distribution of cold-water corals from Freiwald et al. (2017)
+#'
+#' @details
+#' This dataset has compiled 32631 occurrence records of cold-water corals in the world ocean.
+#' @docType data
+#' @keywords datasets
+#' @format A SpatialPointsDataFrame
+#' @source \url{http://data.unep-wcmc.org/datasets/3}
+#' @references Freiwald A, Rogers A, Hall-Spencer J, Guinotte JM, Davies AJ, Yesson C, Martin CS, Weatherdon LV (2017). Global distribution of cold-water corals (version 3.0). Second update to the dataset in Freiwald et al. (2004) by UNEP-WCMC, in collaboration with Andre Freiwald and John Guinotte. Cambridge (UK): UNEP World Conservation Monitoring Centre.
+#' @name coral
+#' @examples
+#' # VME-associated cold water corals
+#' # corals between 200 and 2500 m water depth
+#' library(plotKML)
+#' plotKML(subset(coral, Summit<=2500 & Summit>=200)[, "UNIQUE_ID"],
+#'         folder.name="seamount", colour_scale = jet.colors(100), raster_name="seamount.png")
+NULL
