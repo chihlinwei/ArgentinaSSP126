@@ -1,34 +1,50 @@
 Extract seafloor climate change data by coordinate
 ================
 Chih-Lin Wei
-2024-07-26
+2024-07-27
 
 ``` r
 library(ArgentinaSSP126)
 library(ggplot2)
 library(dplyr)
 library(tidyr)
+library(sf)
 ```
 
 # Species occurrence data
 
-We first download Argentine hake and Demospongiae occurrence data from
+We first download Argentine hake, Argentina red shrimp, Chilean king
+crab, and Demospongiae occurrence data from
 [OBIS](https://obis.org/area/7) using the
 [occurrence](https://www.rdocumentation.org/packages/robis/versions/2.11.3/topics/occurrence)
 function from the
 [robis](https://www.rdocumentation.org/packages/robis/versions/2.11.3)
 package. You may choose any other species from
 [OBIS](https://obis.org/area/7) and no. 7 is the area ID for Argentina.
+Additionally, occurrence of cold water corals were downloaded from
+[UNEP-WCMC](https://data.unep-wcmc.org/datasets/3).
 
 ``` r
 library(robis)
 
+# Download OBIS data
 sponge <- occurrence(scientificname = "Demospongiae", areaid = 7)
 hake <- occurrence(scientificname = "Merluccius hubbsi", areaid = 7)
+shrimp <- occurrence(scientificname = "Pleoticus muelleri", areaid = 7)
+crab <- occurrence(scientificname = "Lithodes santolla", areaid = 7)
+cwc <- as.data.frame(coral)[,c("y", "x", "SPECIES")]
+names(cwc) <- c("decimalLatitude", "decimalLongitude", "scientificName")
+
+# Combine all occurrence data
+occ <- rbind(hake[, c(6:7, 21)] %>% cbind(Taxa="Argentine hake"), 
+             shrimp[, c(6:7, 21)] %>% cbind(Taxa="Argentina red shrimp"), 
+             crab[, c(6:7, 21)] %>% cbind(Taxa="Chilean king crab"), 
+             sponge[, c(2:3, 6)] %>% cbind(Taxa="Demosponge"), 
+             cwc %>% cbind(Taxa="Coldwater coral")
+             )
 ```
 
-Here, let’s look at the first ten records of the Argentine hake and
-Demospongiae occurrence data.
+Here, let’s look at the first ten records of the Argentine hake data.
 
 ``` r
 library(knitr)
@@ -49,23 +65,6 @@ head(hake[, c(6:7, 21)], 10) %>% kable
 |       -46.01667 |        -65.53333 | Merluccius hubbsi |
 |       -45.28333 |        -65.25000 | Merluccius hubbsi |
 
-``` r
-head(sponge[, c(2:3, 6)], 10) %>% kable
-```
-
-| decimalLatitude | decimalLongitude | scientificName                          |
-|----------------:|-----------------:|:----------------------------------------|
-|       -38.01000 |        -57.08000 | Lissodendoryx (Ectyodoryx) nobilis      |
-|       -44.21000 |        -65.11000 | Trachytedania spinata                   |
-|       -42.64083 |        -64.24525 | Demospongiae                            |
-|       -42.62378 |        -64.26614 | Clathria                                |
-|       -52.50000 |        -67.23300 | Tedania (Tedania)                       |
-|       -42.62406 |        -64.26022 | Demospongiae                            |
-|       -37.28330 |        -53.86670 | Latrunculia (Aciculatrunculia) apicalis |
-|       -42.62406 |        -64.26022 | Clathria                                |
-|       -53.83330 |        -67.66670 | Haliclona (Reniera) topsenti            |
-|       -37.28330 |        -53.86670 | Semisuberites cribrosa                  |
-
 There are a total of 2617 occurrence records within the [Argentina
 EEZ](https://marineregions.org/gazetteer.php?p=details&id=8466). We can
 then overlay them on top of the
@@ -74,20 +73,19 @@ raster to see the data distribution.
 
 ``` r
 bathy <- etopo2022 %>% mask(eez) %>% as.data.frame(xy = TRUE) %>% na.omit
-occ <- rbind(cbind(hake[, c(6:7, 21)], Taxa="Argentine hake"), cbind(sponge[, c(2:3, 6)], Taxa="Demosponge"))
+
 ggplot(bathy) +
   geom_raster(aes(x=x, y=y, fill=-layer))+
   geom_polygon(data=arg, aes(x=X, y=Y, group=PID), fill="bisque2", colour="transparent")+
-  geom_polygon(data=fortify(eez), aes(x=long, y=lat, group=id), fill="transparent", colour="red")+
+  geom_sf(data=as(eez, "sf"), fill="transparent", colour="red")+
   geom_contour(data=bathy, aes(x=x, y=y, z=layer), breaks=-200, linetype=2, colour="gray50")+
   geom_contour(data=bathy, aes(x=x, y=y, z=layer), breaks=-4000, linetype=1, colour="gray50")+
   geom_point(data=occ, aes(x=decimalLongitude, y=decimalLatitude), size=0.8)+
-  facet_wrap(~Taxa)+
+  facet_wrap(~Taxa, nrow=1)+
   scale_fill_gradientn(colours=terrain.colors(7))+
   scale_x_continuous(expand = expansion(mult = 0))+
   scale_y_continuous(expand = expansion(mult = 0))+
   labs(x=NULL, y=NULL, fill="Depth\n(m)")+
-  coord_fixed(1.52)+
   theme_bw() %+replace% theme(legend.position = "right", legend.key.width =  unit(0.5, 'cm'))
 ```
 
@@ -114,13 +112,13 @@ modified (e.g., removing the years) to be consistent across three
 periods for the convenience of modeling and predictions.
 
 ``` r
-hist <- addLayer(etopo2022, cmip6_1950_2000_av) %>% mask(eez)
+hist <- addLayer(etopo2022, cmip6_1950_2000_av) #%>% mask(eez)
 names(hist)[-1] <- gsub("_av_1950_to_2000", "", names(cmip6_1950_2000_av))
 
-proj1 <- addLayer(etopo2022, cmip6_2041_2060_av) %>% mask(eez)
+proj1 <- addLayer(etopo2022, cmip6_2041_2060_av) #%>% mask(eez)
 names(proj1)[-1] <- gsub("_av_2041_2060", "", names(cmip6_2041_2060_av))
 
-proj2 <- addLayer(etopo2022, cmip6_2081_2100_av) %>% mask(eez)
+proj2 <- addLayer(etopo2022, cmip6_2081_2100_av) #%>% mask(eez)
 names(proj2)[-1] <- gsub("_av_2081_2100", "", names(cmip6_2081_2100_av))
 ```
 
@@ -148,17 +146,32 @@ me1 <- maxent(hist, subset(occ, Taxa=="Argentine hake"))
 r1 <- addLayer(predict(me1, hist), predict(me1, proj1), predict(me1, proj2))
 names(r1) <- c("Year_1950_to_2000", "Year_2041_to_2060", "Year_2081_to_2100")
 
-# Maxnet modeling for demosponge
-me2 <- maxent(hist, subset(occ, Taxa=="Demosponge"))
+# Maxnet modeling for Argentina red shrimp
+me2 <- maxent(hist, subset(occ, Taxa=="Argentina red shrimp"))
 r2 <- addLayer(predict(me2, hist), predict(me2, proj1), predict(me2, proj2))
 names(r2) <- c("Year_1950_to_2000", "Year_2041_to_2060", "Year_2081_to_2100")
+
+# Maxnet modeling for Chilean king crab
+me3 <- maxent(hist, subset(occ, Taxa=="Chilean king crab"))
+r3 <- addLayer(predict(me3, hist), predict(me3, proj1), predict(me3, proj2))
+names(r3) <- c("Year_1950_to_2000", "Year_2041_to_2060", "Year_2081_to_2100")
+
+# Maxnet modeling for Demosponge
+me4 <- maxent(hist, subset(occ, Taxa=="Demosponge"))
+r4 <- addLayer(predict(me4, hist), predict(me4, proj1), predict(me4, proj2))
+names(r4) <- c("Year_1950_to_2000", "Year_2041_to_2060", "Year_2081_to_2100")
+
+# Maxnet modeling for coldwater coral
+me5 <- maxent(hist, subset(occ, Taxa=="Coldwater coral"))
+r5 <- addLayer(predict(me5, hist), predict(me5, proj1), predict(me5, proj2))
+names(r5) <- c("Year_1950_to_2000", "Year_2041_to_2060", "Year_2081_to_2100")
 ```
 
 We can use the
 [extract](https://www.rdocumentation.org/packages/raster/versions/3.6-23/topics/extract)
 function to take a quick look at the historical predictors used in the
 model. This predictor table is corresponded to the previous Argentine
-hake and Demospongiae occurrence table.
+hake table.
 
 ``` r
 raster::extract(hist, subset(occ, Taxa=="Argentine hake")) %>% head(10) %>% kable(digits=3)
@@ -177,67 +190,34 @@ raster::extract(hist, subset(occ, Taxa=="Argentine hake")) %>% head(10) %>% kabl
 | -83.863 | 82.649 | 0.272 | 8.067 |  7.532 |    0 |    0 | 0.131 |      0.069 |      0.043 |   2.241 |   2.481 |
 | -89.355 | 82.644 | 0.272 | 8.070 |  7.813 |    0 |    0 | 0.133 |      0.069 |      0.043 |   2.251 |   2.528 |
 
-``` r
-raster::extract(hist, subset(occ, Taxa=="Demosponge")) %>% head(10) %>% kable(digits=3)
-```
-
-|     layer |    epc |    o2 |    ph | thetao | arag | calc |   co3 | co3satarag | co3satcalc | aragsat | calcsat |
-|----------:|-------:|------:|------:|-------:|-----:|-----:|------:|-----------:|-----------:|--------:|--------:|
-|   -41.299 | 40.493 | 0.265 | 8.094 |  9.675 |    0 |    0 | 0.151 |      0.068 |      0.043 |   2.129 |   2.850 |
-|   -52.222 | 70.588 | 0.272 | 8.079 |  8.644 |    0 |    0 | 0.141 |      0.068 |      0.043 |   2.359 |   2.648 |
-|        NA |     NA |    NA |    NA |     NA |   NA |   NA |    NA |         NA |         NA |      NA |      NA |
-|   -72.107 | 62.435 | 0.266 | 8.096 | 10.680 |    0 |    0 | 0.157 |      0.068 |      0.043 |   2.563 |   2.953 |
-|   -92.298 | 97.392 | 0.297 | 8.082 |  5.849 |    0 |    0 | 0.124 |      0.069 |      0.043 |   1.911 |   2.334 |
-|   -72.107 | 62.435 | 0.266 | 8.096 | 10.680 |    0 |    0 | 0.157 |      0.068 |      0.043 |   2.563 |   2.953 |
-| -1136.211 | 25.874 | 0.211 | 7.952 |  5.026 |    0 |    0 | 0.117 |      0.104 |      0.064 |   1.223 |   1.702 |
-|   -72.107 | 62.435 | 0.266 | 8.096 | 10.680 |    0 |    0 | 0.157 |      0.068 |      0.043 |   2.563 |   2.953 |
-|        NA |     NA |    NA |    NA |     NA |   NA |   NA |    NA |         NA |         NA |      NA |      NA |
-| -1136.211 | 25.874 | 0.211 | 7.952 |  5.026 |    0 |    0 | 0.117 |      0.104 |      0.064 |   1.223 |   1.702 |
-
 # Habitat suitability projections
 
-Finally, we map the projected habitat suitability of Argentine hake for
-the years 1950 to 2000, 2041 to 2060, and 2081 to 2100.
+Finally, we map the projected habitat suitability of Argentine hake,
+Coldwater coral, and Demosponge for the years 1950 to 2000, 2041 to
+2060, and 2081 to 2100, respectively.
 
 ``` r
-dat <- r1 %>% as.data.frame(xy = TRUE) %>% na.omit %>% gather(-x, -y, key = "var", value = "value")
+dat <- rbind(
+  r1 %>% mask(eez) %>% as.data.frame(xy = TRUE) %>% na.omit %>% gather(-x, -y, key = "var", value = "value") %>% cbind(Taxa="Argentine hake"),
+  r2 %>% mask(eez) %>% as.data.frame(xy = TRUE) %>% na.omit %>% gather(-x, -y, key = "var", value = "value") %>% cbind(Taxa="Argentina red shrimp"),
+  r3 %>% mask(eez) %>% as.data.frame(xy = TRUE) %>% na.omit %>% gather(-x, -y, key = "var", value = "value") %>% cbind(Taxa="Chilean king crab"),
+  r4 %>% mask(eez) %>% as.data.frame(xy = TRUE) %>% na.omit %>% gather(-x, -y, key = "var", value = "value") %>% cbind(Taxa="Demosponge"),
+  r5 %>% mask(eez) %>% as.data.frame(xy = TRUE) %>% na.omit %>% gather(-x, -y, key = "var", value = "value") %>% cbind(Taxa="Coldwater coral")
+)
+
 ggplot(dat) +
   geom_raster(aes(x=x, y=y, fill=value))+
   geom_polygon(data=arg, aes(x=X, y=Y, group=PID), fill="bisque2", colour="transparent")+
-  geom_polygon(data=fortify(eez), aes(x=long, y=lat, group=id), fill="transparent", colour="red")+
+  geom_sf(data=as(eez, "sf"), fill="transparent", colour="red")+
   geom_contour(data=bathy, aes(x=x, y=y, z=layer), breaks=-200, linetype=2, colour="gray50")+
   geom_contour(data=bathy, aes(x=x, y=y, z=layer), breaks=-4000, linetype=1, colour="gray50")+
-  geom_point(data=hake, aes(x=decimalLongitude, y=decimalLatitude), size=0.2)+
-  facet_wrap(~var, nrow=1)+
+  #geom_point(data=occ %>% as.data.frame, aes(x=decimalLongitude, y=decimalLatitude), size=0.2)+
+  facet_grid(var~Taxa)+
   scale_fill_gradientn(colours=jet.colors(10))+
   scale_x_continuous(expand = expansion(mult = 0))+
   scale_y_continuous(expand = expansion(mult = 0))+
   labs(x=NULL, y=NULL, fill="Habitat\nSuitability")+
-  coord_fixed(1.52)+
   theme_bw() %+replace% theme(legend.position = "right", legend.key.width =  unit(0.5, 'cm'))
 ```
 
 ![](tute3_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
-
-Habitat suitability of Demosponge for the years 1950 to 2000, 2041 to
-2060, and 2081 to 2100
-
-``` r
-dat <- r2 %>% as.data.frame(xy = TRUE) %>% na.omit %>% gather(-x, -y, key = "var", value = "value")
-ggplot(dat) +
-  geom_raster(aes(x=x, y=y, fill=value))+
-  geom_polygon(data=arg, aes(x=X, y=Y, group=PID), fill="bisque2", colour="transparent")+
-  geom_polygon(data=fortify(eez), aes(x=long, y=lat, group=id), fill="transparent", colour="red")+
-  geom_contour(data=bathy, aes(x=x, y=y, z=layer), breaks=-200, linetype=2, colour="gray50")+
-  geom_contour(data=bathy, aes(x=x, y=y, z=layer), breaks=-4000, linetype=1, colour="gray50")+
-  geom_point(data=sponge, aes(x=decimalLongitude, y=decimalLatitude), size=0.2)+
-  facet_wrap(~var, nrow=1)+
-  scale_fill_gradientn(colours=jet.colors(10))+
-  scale_x_continuous(expand = expansion(mult = 0))+
-  scale_y_continuous(expand = expansion(mult = 0))+
-  labs(x=NULL, y=NULL, fill="Habitat\nSuitability")+
-  coord_fixed(1.52)+
-  theme_bw() %+replace% theme(legend.position = "right", legend.key.width =  unit(0.5, 'cm'))
-```
-
-![](tute3_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
