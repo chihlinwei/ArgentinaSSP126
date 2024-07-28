@@ -1,7 +1,7 @@
 Display seafloor climate change data
 ================
 Chih-Lin Wei
-2024-07-27
+2024-07-28
 
 # Sealfoor climate change dataset
 
@@ -132,10 +132,13 @@ plot_fun <- function(r, colours=NULL, q_limits=c(0.001, 0.999)){
     # Color key limits and colours
     lim1 <- quantile(dat$value, q_limits, na.rm=TRUE)
     lim2 <- max(abs(quantile(dat$value, q_limits, na.rm=TRUE)))
+    # If the raster only have positive values, use sequential color palettes
     if(min(lim1) >= 0) {
-      lims <- lim1; cols <- jet.colors(7)
+      lims <- lim1; cols <- jet.colors2(7)
+    # If the raster contains negative values, use diverging color palettes
     } else {
       lims <- c(-lim2, lim2); cols <- jet.colors3(7)}
+    # If color pallette is specified, use the specified color palette
     if(is.null(colours)) cols <- cols else cols <- colours
       
     # Plot raster layer

@@ -1,7 +1,7 @@
 Extract seafloor climate change data by polygon
 ================
 Chih-Lin Wei
-2024-07-27
+2024-07-28
 
 ``` r
 library(ArgentinaSSP126)
@@ -23,20 +23,28 @@ do that by
 the
 [etopo2022](https://www.ncei.noaa.gov/products/etopo-global-relief-model)
 raster with Argentina EEZ. We can see that the Argentina EEZ consisting
-of continental shelf (0-200 m) and continental slope (200-4000 m).
+of continental shelf (0-200 m) and continental slope (200-4000 m). The
+shelf is indicated by gray dashed contour lines and slope by gray solid
+contour lines. Additionally, submarine canyons [(Harris and Whitway,
+2011)](https://doi.org/10.1016/j.margeo.2011.05.008) are indicated by
+blue solid lines and seamounts [(Kim and Wessel,
+2011)](https://doi.org/10.1111/j.1365-246X.2011.05076.x) are indicated
+by red dots.
 
 ``` r
 bathy <- etopo2022  %>% mask(eez) %>% as.data.frame(xy = TRUE) %>% na.omit
 ggplot(bathy) +
       geom_raster(aes(x=x, y=y, fill=-layer))+
       geom_polygon(data=arg, aes(x=X, y=Y, group=PID), fill="bisque2", colour="transparent")+
-      geom_sf(data=as(eez, "sf"), fill="transparent", colour="red")+
+      #geom_sf(data=as(eez, "sf"), fill="transparent", colour="red")+
       geom_contour(data=bathy, aes(x=x, y=y, z=layer), breaks=-200, linetype=2, colour="gray50")+
       geom_contour(data=bathy, aes(x=x, y=y, z=layer), breaks=-4000, linetype=1, colour="gray50")+
+      geom_sf(data=as(canyon, "sf"), colour="blue")+
+      geom_sf(data=as(seamount, "sf"), size=0.5, colour="red")+
       scale_fill_gradientn(colours=terrain.colors(7))+
       scale_x_continuous(expand = expansion(mult = 0))+
       scale_y_continuous(expand = expansion(mult = 0))+
-      labs(x=NULL, y=NULL, fill=NULL)+
+      labs(x=NULL, y=NULL, fill="Depth\n(m)")+
       theme_bw() %+replace% theme(legend.position = "top", legend.key.width =  unit(1, 'cm'))
 ```
 
@@ -66,19 +74,24 @@ plot_fun <- function(r, colours=NULL, q_limits=c(0.001, 0.999)){
     # Color key limits and colours
     lim1 <- quantile(dat$value, q_limits, na.rm=TRUE)
     lim2 <- max(abs(quantile(dat$value, q_limits, na.rm=TRUE)))
+    # If the raster only have positive values, use sequential color palettes
     if(min(lim1) >= 0) {
-      lims <- lim1; cols <- jet.colors(7)
+      lims <- lim1; cols <- jet.colors2(7)
+    # If the raster contains negative values, use diverging color palettes
     } else {
       lims <- c(-lim2, lim2); cols <- jet.colors3(7)}
+    # If color pallette is specified, use the specified color palette
     if(is.null(colours)) cols <- cols else cols <- colours
       
     # Plot raster layer
     ggplot(dat) +
       geom_raster(aes(x=x, y=y, fill=value))+
       geom_polygon(data=arg, aes(x=X, y=Y, group=PID), fill="bisque2", colour="transparent")+
-      geom_sf(data=as(eez, "sf"), fill="transparent", colour="red")+
+      #geom_sf(data=as(eez, "sf"), fill="transparent", colour="red")+
       geom_contour(data=bathy, aes(x=x, y=y, z=layer), breaks=-200, linetype=2, colour="gray50")+
       geom_contour(data=bathy, aes(x=x, y=y, z=layer), breaks=-4000, linetype=1, colour="gray50")+
+      #geom_sf(data=as(canyon, "sf"), colour="blue")+
+      #geom_sf(data=as(seamount, "sf"), size=0.5, colour="red")+
       scale_fill_gradientn(colours=cols, limits=lims)+
       scale_x_continuous(expand = expansion(mult = 0))+
       scale_y_continuous(expand = expansion(mult = 0))+
@@ -105,21 +118,38 @@ plot_fun(r=cmip6_2041_2060_exsd %>% subset(1:4) %>% mask(eez))
 
 ![](tute2_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
 
-We can also use violin plots to show climate change hazards within
-Argentina EEZ separated by 200-m depth contour (i.e., continental shelf
-vs. slope).
+We can mask the raster layers of climate change hazards by spatial
+objects (i.e., polygons, polylines, or spatial points) and use violin
+plots to show the projections within Argentina EEZ separated by 200-m
+depth contour (i.e., continental shelf vs. slope). We can also show the
+projections of submarine canyons and seamounts within the EEZ.
 
 ``` r
-out <- addLayer(etopo2022, cmip6_2041_2060_exsd %>% subset(1:4)) %>% mask(eez) %>% as.data.frame(xy = TRUE) %>% na.omit
-out$Region <- cut(-out$layer, c(0, 200, 5000), labels=c("Shelf", "Slope"))
+# Custom function to mask habitats
+mask_habitat <- function(x){
+  pred <- addLayer(etopo2022, x)
+  # Mask continental margin
+  ma <- pred %>% mask(eez) %>% as.data.frame(xy = TRUE) %>% na.omit
+  ma$Habitat <- cut(-ma$layer, c(0, 200, 5000), labels=c("Shelf", "Slope"))
+  # Mask submarine canyons
+  sc <- pred %>% mask(canyon) %>% mask(eez) %>% as.data.frame(xy = TRUE) %>% na.omit
+  sc$Habitat <- "Canyon"
+  # Mask seamounts
+  sm <- pred %>% mask(seamount) %>% mask(eez) %>% as.data.frame(xy = TRUE) %>% na.omit
+  sm$Habitat <- "Seamount"
+  # Combine and stack data frame
+  rbind(ma, sc, sm) %>% gather(-x, -y, -layer, -Habitat, key = "var", value = "value")
+}
+```
 
-ggplot(data=out %>% gather(-x, -y, -layer, -Region, key = "var", value = "value"))+
-  geom_violin(aes(x=Region, y=value))+
+``` r
+ggplot(data=cmip6_2041_2060_exsd %>% subset(1:4) %>% mask_habitat)+
+  geom_violin(aes(x=Habitat, y=value))+
   facet_wrap(~var, scales="free", nrow=1)+
   labs(y="Climate Change Hazards")
 ```
 
-![](tute2_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+![](tute2_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 # Time of emergence of climate changes
 
@@ -134,31 +164,30 @@ values within two standard deviations account for about 95%.
 plot_fun(cmip6_extoe_early %>% subset(1:4) %>% mask(eez), colours = brewer.pal(10, 'RdYlBu'), q_limits = c(0, 1))
 ```
 
-![](tute2_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](tute2_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 ``` r
-out <- addLayer(etopo2022, cmip6_extoe_early %>% subset(1:4)) %>% mask(eez) %>% as.data.frame(xy = TRUE) %>% na.omit
-out$Region <- cut(-out$layer, c(0, 200, 5000), labels=c("Shelf", "Slope"))
-
-ggplot(data=out %>% gather(-x, -y, -layer, -Region, key = "var", value = "value"))+
-  geom_violin(aes(x=Region, y=value))+
+ggplot(data=cmip6_extoe_early %>% subset(1:4) %>% mask_habitat)+
+  geom_violin(aes(x=Habitat, y=value))+
   facet_wrap(~var, scales="free", nrow=1)+
   labs(y="Time of Emergence of Climate Change")
 ```
 
-![](tute2_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](tute2_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
 Next, we show the years when climate changes for export POC flux,
 dissolved oxygen, pH, and temperature simultaneously exceed twice the
 historical variability.
 
 ``` r
-all <- overlay(subset(cmip6_extoe_early, 1:4), fun=max) %>% mask(eez) %>% as.data.frame(xy = TRUE) %>% na.omit
+all <- overlay(subset(cmip6_extoe_early, 1:4), fun=max)
+names(all) <- "cmip6_extoe_early"
+
 bathy <- etopo2022 %>% mask(eez) %>% as.data.frame(xy = TRUE) %>% na.omit
-p1 <- ggplot(all) +
-      geom_raster(aes(x=x, y=y, fill=layer))+
+p1 <- ggplot(all%>% mask(eez) %>% as.data.frame(xy = TRUE) %>% na.omit) +
+      geom_raster(aes(x=x, y=y, fill=cmip6_extoe_early))+
       geom_polygon(data=arg, aes(x=X, y=Y, group=PID), fill="bisque2", colour="transparent")+
-      geom_sf(data=as(eez, "sf"), fill="transparent", colour="red")+
+      #geom_sf(data=as(eez, "sf"), fill="transparent", colour="red")+
       geom_contour(data=bathy, aes(x=x, y=y, z=layer), breaks=-200, linetype=2, colour="gray50")+
       geom_contour(data=bathy, aes(x=x, y=y, z=layer), breaks=-4000, linetype=1, colour="gray50")+
       scale_fill_gradientn(colours=brewer.pal(10, 'RdYlBu'))+
@@ -168,19 +197,16 @@ p1 <- ggplot(all) +
       theme_bw() %+replace% theme(legend.position = "right", legend.key.height =  unit(1.8, 'cm'))
 
 # Violin plots
-out <- addLayer(etopo2022, overlay(subset(cmip6_extoe_early, 1:4), fun=max)) %>% mask(eez) %>% as.data.frame(xy = TRUE) %>% na.omit
-out$Region <- cut(-out$layer.1, c(0, 200, 5000), labels=c("Shelf", "Slope"))
-
-p2 <- ggplot(data=out)+
-  geom_violin(aes(x=Region, y=layer.2))+
+p2 <- ggplot(data=mask_habitat(all))+
+  geom_violin(aes(x=Habitat, y=value))+
   labs(y="Time of Emergence of Climate Change")
 ```
 
 ``` r
-p2+p1+plot_layout(widths = c(1, 2))
+p2+p1
 ```
 
-![](tute2_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](tute2_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 # Cumulative impact of climate change hazards
 
@@ -215,19 +241,16 @@ cum_imp <- function(r){
 plot_fun(r=cum_imp(cmip6_2041_2060_exsd) %>% mask(eez))
 ```
 
-![](tute2_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](tute2_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 ``` r
-out <- addLayer(etopo2022, cum_imp(cmip6_2041_2060_exsd)) %>% mask(eez) %>% as.data.frame(xy = TRUE) %>% na.omit
-out$Region <- cut(-out$layer, c(0, 200, 5000), labels=c("Shelf", "Slope"))
-
-ggplot(data=out %>% gather(-x, -y, -layer, -Region, key = "var", value = "value"))+
-  geom_violin(aes(x=Region, y=value))+
+ggplot(data=cum_imp(cmip6_2041_2060_exsd) %>% mask_habitat)+
+  geom_violin(aes(x=Habitat, y=value))+
   facet_wrap(~var, scales="free")+
   labs(y="Cumulative Climate Change Impact")
 ```
 
-![](tute2_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+![](tute2_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 # Climate velocity
 
@@ -249,19 +272,16 @@ Argentina EEZ.
 plot_fun(cmip6_2041_2060_voccMeg %>% subset(1:4) %>% mask(eez), q_limits=c(0.01, 0.99))
 ```
 
-![](tute2_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+![](tute2_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
 
 ``` r
-out <- addLayer(etopo2022, cmip6_2041_2060_voccMeg %>% subset(1:4)) %>% mask(eez) %>% as.data.frame(xy = TRUE) %>% na.omit
-out$Region <- cut(-out$layer, c(0, 200, 5000), labels=c("Shelf", "Slope"))
-
-ggplot(data=out %>% gather(-x, -y, -layer, -Region, key = "var", value = "value"))+
-  geom_violin(aes(x=Region, y=value))+
+ggplot(data=cmip6_2041_2060_voccMeg %>% subset(1:4) %>% mask_habitat)+
+  geom_violin(aes(x=Habitat, y=value))+
   facet_wrap(~var, scales="free", nrow=1)+
   labs(y="Climate Velocity Magnitudes")
 ```
 
-![](tute2_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+![](tute2_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
 
 # Cumulative impact based on climate velocity
 
@@ -277,16 +297,13 @@ positive impacts.
 plot_fun(r=cum_imp(cmip6_2041_2060_voccMeg) %>% mask(eez), q_limits = c(0, 0.99))
 ```
 
-![](tute2_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+![](tute2_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
 
 ``` r
-out <- addLayer(etopo2022, cum_imp(cmip6_2041_2060_voccMeg)) %>% mask(eez) %>% as.data.frame(xy = TRUE) %>% na.omit
-out$Region <- cut(-out$layer, c(0, 200, 5000), labels=c("Shelf", "Slope"))
-
-ggplot(data=out %>% gather(-x, -y, -layer, -Region, key = "var", value = "value"))+
-  geom_violin(aes(x=Region, y=value))+
+ggplot(data=cum_imp(cmip6_2041_2060_voccMeg) %>% mask_habitat)+
+  geom_violin(aes(x=Habitat, y=value))+
   facet_wrap(~var, scales="free")+
   labs(y="Cumulative Climate Change Impact")
 ```
 
-![](tute2_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
+![](tute2_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
