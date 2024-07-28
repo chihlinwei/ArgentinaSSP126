@@ -1,4 +1,4 @@
-Extract seafloor climate change data by polygon
+Extract seafloor climate change data by polygon, polyline, or points
 ================
 Chih-Lin Wei
 2024-07-28
@@ -13,7 +13,7 @@ library(RColorBrewer)
 library(sf)
 ```
 
-# Extract data by Argentina EEZ polygon
+# Seafloor habitats within Argentina EEZ
 
 In this analysis, we want to extract and display the seafloor climate
 change data for [Argentina
@@ -27,9 +27,10 @@ of continental shelf (0-200 m) and continental slope (200-4000 m). The
 shelf is indicated by gray dashed contour lines and slope by gray solid
 contour lines. Additionally, submarine canyons [(Harris and Whitway,
 2011)](https://doi.org/10.1016/j.margeo.2011.05.008) are indicated by
-blue solid lines and seamounts [(Kim and Wessel,
-2011)](https://doi.org/10.1111/j.1365-246X.2011.05076.x) are indicated
-by red dots.
+blue solid lines, seamounts [(Kim and Wessel,
+2011)](https://doi.org/10.1111/j.1365-246X.2011.05076.x) by red dots,
+and cold water corals [(CWC)](http://data.unep-wcmc.org/datasets/3) by
+black dots.
 
 ``` r
 bathy <- etopo2022  %>% mask(eez) %>% as.data.frame(xy = TRUE) %>% na.omit
@@ -41,6 +42,7 @@ ggplot(bathy) +
       geom_contour(data=bathy, aes(x=x, y=y, z=layer), breaks=-4000, linetype=1, colour="gray50")+
       geom_sf(data=as(canyon, "sf"), colour="blue")+
       geom_sf(data=as(seamount, "sf"), size=0.5, colour="red")+
+      geom_sf(data=as(coral, "sf"), size=0.5, colour="black")+
       scale_fill_gradientn(colours=terrain.colors(7))+
       scale_x_continuous(expand = expansion(mult = 0))+
       scale_y_continuous(expand = expansion(mult = 0))+
@@ -118,6 +120,27 @@ plot_fun(r=cmip6_2041_2060_exsd %>% subset(1:4) %>% mask(eez))
 
 ![](tute2_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
 
+We can also show climate change hazards between 2041 and 2060 in
+submarine canyon
+
+``` r
+plot_fun(r=cmip6_2041_2060_exsd %>% subset(1:4) %>% mask(canyon))
+```
+
+![](tute2_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+
+Similarly, we can show climate change hazards between 2041 and 2060 on
+seamounts and cold water corals.
+
+``` r
+# Mask raster layers by seamount and CWC and then merge them together 
+out <- merge(cmip6_2041_2060_exsd %>% subset(1:4) %>% mask(seamount), cmip6_2041_2060_exsd %>% subset(1:4) %>% mask(coral))
+names(out) <- names(cmip6_2041_2060_exsd)[1:4]
+plot_fun(r=out)
+```
+
+![](tute2_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+
 We can mask the raster layers of climate change hazards by spatial
 objects (i.e., polygons, polylines, or spatial points) and use violin
 plots to show the projections within Argentina EEZ separated by 200-m
@@ -137,19 +160,22 @@ mask_habitat <- function(x){
   # Mask seamounts
   sm <- pred %>% mask(seamount) %>% mask(eez) %>% as.data.frame(xy = TRUE) %>% na.omit
   sm$Habitat <- "Seamount"
+  # Mask cold water corals
+  cwc <- pred %>% mask(coral) %>% mask(eez) %>% as.data.frame(xy = TRUE) %>% na.omit
+  cwc$Habitat <- "CWC"
   # Combine and stack data frame
-  rbind(ma, sc, sm) %>% gather(-x, -y, -layer, -Habitat, key = "var", value = "value")
+  rbind(ma, sc, sm, cwc) %>% gather(-x, -y, -layer, -Habitat, key = "var", value = "value")
 }
 ```
 
 ``` r
 ggplot(data=cmip6_2041_2060_exsd %>% subset(1:4) %>% mask_habitat)+
   geom_violin(aes(x=Habitat, y=value))+
-  facet_wrap(~var, scales="free", nrow=1)+
+  facet_wrap(~var, scales="free", nrow=2)+
   labs(y="Climate Change Hazards")
 ```
 
-![](tute2_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](tute2_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
 # Time of emergence of climate changes
 
@@ -164,16 +190,16 @@ values within two standard deviations account for about 95%.
 plot_fun(cmip6_extoe_early %>% subset(1:4) %>% mask(eez), colours = brewer.pal(10, 'RdYlBu'), q_limits = c(0, 1))
 ```
 
-![](tute2_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](tute2_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 ``` r
 ggplot(data=cmip6_extoe_early %>% subset(1:4) %>% mask_habitat)+
   geom_violin(aes(x=Habitat, y=value))+
-  facet_wrap(~var, scales="free", nrow=1)+
+  facet_wrap(~var, scales="free")+
   labs(y="Time of Emergence of Climate Change")
 ```
 
-![](tute2_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](tute2_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 Next, we show the years when climate changes for export POC flux,
 dissolved oxygen, pH, and temperature simultaneously exceed twice the
@@ -206,7 +232,7 @@ p2 <- ggplot(data=mask_habitat(all))+
 p2+p1
 ```
 
-![](tute2_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](tute2_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 # Cumulative impact of climate change hazards
 
@@ -241,7 +267,7 @@ cum_imp <- function(r){
 plot_fun(r=cum_imp(cmip6_2041_2060_exsd) %>% mask(eez))
 ```
 
-![](tute2_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+![](tute2_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
 
 ``` r
 ggplot(data=cum_imp(cmip6_2041_2060_exsd) %>% mask_habitat)+
@@ -250,7 +276,7 @@ ggplot(data=cum_imp(cmip6_2041_2060_exsd) %>% mask_habitat)+
   labs(y="Cumulative Climate Change Impact")
 ```
 
-![](tute2_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+![](tute2_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
 
 # Climate velocity
 
@@ -272,16 +298,16 @@ Argentina EEZ.
 plot_fun(cmip6_2041_2060_voccMeg %>% subset(1:4) %>% mask(eez), q_limits=c(0.01, 0.99))
 ```
 
-![](tute2_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+![](tute2_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
 
 ``` r
 ggplot(data=cmip6_2041_2060_voccMeg %>% subset(1:4) %>% mask_habitat)+
   geom_violin(aes(x=Habitat, y=value))+
-  facet_wrap(~var, scales="free", nrow=1)+
+  facet_wrap(~var, scales="free")+
   labs(y="Climate Velocity Magnitudes")
 ```
 
-![](tute2_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+![](tute2_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
 
 # Cumulative impact based on climate velocity
 
@@ -297,7 +323,7 @@ positive impacts.
 plot_fun(r=cum_imp(cmip6_2041_2060_voccMeg) %>% mask(eez), q_limits = c(0, 0.99))
 ```
 
-![](tute2_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
+![](tute2_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
 
 ``` r
 ggplot(data=cum_imp(cmip6_2041_2060_voccMeg) %>% mask_habitat)+
@@ -306,4 +332,4 @@ ggplot(data=cum_imp(cmip6_2041_2060_voccMeg) %>% mask_habitat)+
   labs(y="Cumulative Climate Change Impact")
 ```
 
-![](tute2_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
+![](tute2_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->

@@ -1,4 +1,4 @@
-Extract seafloor climate change data by coordinate
+Applying seafloor climate change data for habitat suitability modeling
 ================
 Chih-Lin Wei
 2024-07-28

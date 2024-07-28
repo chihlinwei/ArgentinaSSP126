@@ -30,5 +30,5 @@ GNU Affero General Public License v3.0
 
 ### Tutorials
 * Wei, C.-L. (2024) [Display seafloor climate change data](https://github.com/chihlinwei/ArgentinaSSP126/blob/main/tutorials/tute1.md)
-* Wei, C.-L. (2024) [Extract seafloor climate change data by polygon](https://github.com/chihlinwei/ArgentinaSSP126/blob/main/tutorials/tute2.md)
-* Wei, C.-L. (2024) [Extract seafloor climate change data by coordinate](https://github.com/chihlinwei/ArgentinaSSP126/blob/main/tutorials/tute3.md)
+* Wei, C.-L. (2024) [Extract seafloor climate change data by polygon, polyline, or points](https://github.com/chihlinwei/ArgentinaSSP126/blob/main/tutorials/tute2.md)
+* Wei, C.-L. (2024) [Applying seafloor climate change data for habitat suitability modeling](https://github.com/chihlinwei/ArgentinaSSP126/blob/main/tutorials/tute3.md)

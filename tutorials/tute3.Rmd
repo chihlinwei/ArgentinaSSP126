@@ -1,5 +1,5 @@
 ---
-title: "Extract seafloor climate change data by coordinate"
+title: "Applying seafloor climate change data for habitat suitability modeling"
 author: "Chih-Lin Wei"
 date: "`r Sys.Date()`"
 output: github_document
