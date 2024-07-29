@@ -117,7 +117,7 @@ ggplot(bathy) +
 
 4.  Custom Plot Function:
 
-- For convenience, we define a custom plot function with three
+- For convenience, we define a custom plot function with four
   parameters:
   - r: A rasterbrick containing the data.
   - vt: A character vector of the new raster titles
@@ -257,7 +257,7 @@ deviations make up about 95%.
 
 ``` r
 plot_fun(r=cmip6_extoe_constant %>% subset(1:4), 
-         vt=c("When~Delta~POC~flux~(sigma)>2", "When~Delta~DO~(sigma)>2", "When~Delta~pH~(sigma)>2", "When~Delta~Temperature~(sigma)>2"),
+         vt=c("When~Delta~POC~flux>2*sigma", "When~Delta~DO>2*sigma", "When~Delta~pH>2*sigma", "When~Delta~Temperature>2*sigma"),
          colours = brewer.pal(10, 'RdYlBu'), q_limits = c(0, 1))
 ```
 
@@ -268,19 +268,9 @@ climate changes for export POC flux, dissolved oxygen, pH, and
 temperature simultaneously exceed twice the historical variability.
 
 ``` r
-all <- overlay(subset(cmip6_extoe_constant, 1:4), fun=max) %>% as.data.frame(xy = TRUE) %>% na.omit
-bathy <- etopo2022%>% as.data.frame(xy = TRUE) %>% na.omit
-ggplot(all) +
-      geom_raster(aes(x=x, y=y, fill=layer))+
-      geom_polygon(data=arg, aes(x=X, y=Y, group=PID), fill="bisque2", colour="transparent")+
-      geom_sf(data=as(eez, "sf"), fill="transparent", colour="red")+
-      geom_contour(data=bathy, aes(x=x, y=y, z=layer), breaks=-200, linetype=2, colour="gray50")+
-      geom_contour(data=bathy, aes(x=x, y=y, z=layer), breaks=-4000, linetype=1, colour="gray50")+
-      scale_fill_gradientn(colours=brewer.pal(10, 'RdYlBu'))+
-      scale_x_continuous(expand = expansion(mult = 0))+
-      scale_y_continuous(expand = expansion(mult = 0))+
-      labs(x=NULL, y=NULL, fill=NULL, title=expression(When~climate~change>2*sigma))+
-      theme_bw() %+replace% theme(legend.position = "top", legend.key.width =  unit(1, 'cm'), plot.title = element_text(hjust=0.5), strip.background = element_blank(), strip.text = element_blank())
+all <- overlay(subset(cmip6_extoe_constant, 1:4), fun=max) %>% mask(eez)
+names(all) <- "cmip6_extoe_constant"
+plot_fun(r=all, vt="When~climate~change>2*sigma", colours=brewer.pal(10, 'RdYlBu'), q_limits = c(0, 1))
 ```
 
 ![](tute1_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
@@ -358,7 +348,7 @@ positive impacts.
 
 ``` r
 plot_fun(r=cmip6_2041_2060_voccMeg %>% cum_imp, 
-         vt=c("Cumulative~negative~impact~(km~yr^-1)", "Cumulative~positivce~impact~(km~yr^-1)"),
+         vt=c("Cumul.~negative~impact~(km~yr^-1)", "Cumul.~positivce~impact~(km~yr^-1)"),
          q_limits = c(0, 0.99))
 ```
 

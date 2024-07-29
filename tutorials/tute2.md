@@ -1,7 +1,7 @@
 Extract seafloor climate change data by polygon, polyline, or points
 ================
 Chih-Lin Wei
-2024-07-28
+2024-07-29
 
 ``` r
 library(ArgentinaSSP126)
@@ -46,8 +46,8 @@ ggplot(bathy) +
       scale_fill_gradientn(colours=terrain.colors(7))+
       scale_x_continuous(expand = expansion(mult = 0))+
       scale_y_continuous(expand = expansion(mult = 0))+
-      labs(x=NULL, y=NULL, fill="Depth\n(m)")+
-      theme_bw() %+replace% theme(legend.position = "top", legend.key.width =  unit(1, 'cm'))
+      labs(x=NULL, y=NULL, fill=NULL, title="Depth (m)")+
+      theme_bw() %+replace% theme(legend.position = "top", legend.key.width =  unit(1, 'cm'), plot.title = element_text(hjust=0.5))
 ```
 
 ![](tute2_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
@@ -55,20 +55,21 @@ ggplot(bathy) +
 We can use the same [ggplot](https://ggplot2.tidyverse.org/) wrap
 function to generate multi-panel plots. The custom plot function use the
 same three parameters, including: + r: A rasterbrick containing the
-data. + colours: A vector of colors to use for the color key. + limits:
-A numeric vector of length two providing quantile limits for the color
-key scale.
+data. + vt: A character vector of the new raster titles + colours: A
+vector of colors to use for the color key. + limits: A numeric vector of
+length two providing quantile limits for the color key scale.
 
 ``` r
-plot_fun <- function(r, colours=NULL, q_limits=c(0.001, 0.999)){
+plot_fun <- function(r, vt=names(r), colours=NULL, q_limits=c(0.001, 0.999)){
   
   # Convert raster to data frame and then to list
-  cmip6_list <- as.data.frame(r, xy = TRUE) %>% na.omit %>%
-  gather(-x, -y, key = "var", value = "value") %>%
-  group_split(var)
+  cmip6 <- as.data.frame(r, xy = TRUE) %>% na.omit %>%
+  gather(-x, -y, key = "var", value = "value", factor_key = TRUE)
+  cmip6$var <- factor(cmip6$var, labels = vt)
+  cmip6_list <- cmip6 %>% group_split(var)
   
   # Depth
-  bathy <- mask(etopo2022, eez)%>% as.data.frame(xy = TRUE) %>% na.omit
+  bathy <- etopo2022%>% as.data.frame(xy = TRUE) %>% na.omit
   
   # ggolot list
   gg_list = lapply(cmip6_list, function(dat) {
@@ -89,17 +90,15 @@ plot_fun <- function(r, colours=NULL, q_limits=c(0.001, 0.999)){
     ggplot(dat) +
       geom_raster(aes(x=x, y=y, fill=value))+
       geom_polygon(data=arg, aes(x=X, y=Y, group=PID), fill="bisque2", colour="transparent")+
-      #geom_sf(data=as(eez, "sf"), fill="transparent", colour="red")+
+      geom_sf(data=as(eez, "sf"), fill="transparent", colour="red")+
       geom_contour(data=bathy, aes(x=x, y=y, z=layer), breaks=-200, linetype=2, colour="gray50")+
       geom_contour(data=bathy, aes(x=x, y=y, z=layer), breaks=-4000, linetype=1, colour="gray50")+
-      #geom_sf(data=as(canyon, "sf"), colour="blue")+
-      #geom_sf(data=as(seamount, "sf"), size=0.5, colour="red")+
       scale_fill_gradientn(colours=cols, limits=lims)+
       scale_x_continuous(expand = expansion(mult = 0))+
       scale_y_continuous(expand = expansion(mult = 0))+
-      labs(x=NULL, y=NULL, fill=NULL)+
+      labs(x=NULL, y=NULL, fill=NULL, title=parse(text=dat$var[1] %>% as.character))+
       facet_wrap(~ var) +
-      theme_bw() %+replace% theme(legend.position = "top", legend.key.width =  unit(1, 'cm'))
+      theme_bw() %+replace% theme(legend.position = "top", legend.key.width =  unit(1, 'cm'), plot.title = element_text(hjust=0.5), strip.background = element_blank(), strip.text = element_blank())
       })
   
   # Wrap ggplot list
@@ -112,40 +111,46 @@ plot_fun <- function(r, colours=NULL, q_limits=c(0.001, 0.999)){
 For example, we can mask the climate change hazards between 2041 and
 2060 by the Argentina EEZ polygon. The following maps show the degree of
 climate change (or climate change hazards) by 2041 to 2060 in the unit
-of historical variability during 1951 to 2000.
+of historical variability during 1951 to 2000. We can see the variations
+within the EEZ better this way.
 
 ``` r
-plot_fun(r=cmip6_2041_2060_exsd %>% subset(1:4) %>% mask(eez))
+plot_fun(r=cmip6_2041_2060_exsd %>% subset(1:4) %>% mask(eez),
+         vt = c("Delta~POC~flux~(sigma)", "Delta~DO~(sigma)", "Delta~pH~(sigma)", "Delta~Temperature~(sigma)")
+         )
 ```
 
 ![](tute2_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
 
 We can also show climate change hazards between 2041 and 2060 in
-submarine canyon
+submarine canyons
 
 ``` r
-plot_fun(r=cmip6_2041_2060_exsd %>% subset(1:4) %>% mask(canyon))
+plot_fun(r=cmip6_2041_2060_exsd %>% subset(1:4) %>% mask(canyon),
+         vt = c("Delta~POC~flux~(sigma)", "Delta~DO~(sigma)", "Delta~pH~(sigma)", "Delta~Temperature~(sigma)")
+         )
 ```
 
 ![](tute2_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
-Similarly, we can show climate change hazards between 2041 and 2060 on
-seamounts and cold water corals.
+The climate change hazards between 2041 and 2060 on seamounts and cold
+water corals are plotted together.
 
 ``` r
 # Mask raster layers by seamount and CWC and then merge them together 
 out <- merge(cmip6_2041_2060_exsd %>% subset(1:4) %>% mask(seamount), cmip6_2041_2060_exsd %>% subset(1:4) %>% mask(coral))
 names(out) <- names(cmip6_2041_2060_exsd)[1:4]
-plot_fun(r=out)
+plot_fun(r=out, vt = c("Delta~POC~flux~(sigma)", "Delta~DO~(sigma)", "Delta~pH~(sigma)", "Delta~Temperature~(sigma)"))
 ```
 
 ![](tute2_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
-We can mask the raster layers of climate change hazards by spatial
+Here, we mask the raster layers of climate change hazards by spatial
 objects (i.e., polygons, polylines, or spatial points) and use violin
-plots to show the projections within Argentina EEZ separated by 200-m
-depth contour (i.e., continental shelf vs. slope). We can also show the
-projections of submarine canyons and seamounts within the EEZ.
+plots to show the climate change hazards by 2041 to 2060 within
+Argentina EEZ separated by 200-m depth contour (i.e., continental shelf
+vs. slope). We can also show the projections of submarine canyons and
+seamounts within the EEZ.
 
 ``` r
 # Custom function to mask habitats
@@ -164,14 +169,17 @@ mask_habitat <- function(x){
   cwc <- pred %>% mask(coral) %>% mask(eez) %>% as.data.frame(xy = TRUE) %>% na.omit
   cwc$Habitat <- "CWC"
   # Combine and stack data frame
-  rbind(ma, sc, sm, cwc) %>% gather(-x, -y, -layer, -Habitat, key = "var", value = "value")
+  rbind(ma, sc, sm, cwc) %>% gather(-x, -y, -layer, -Habitat, key = "var", value = "value", factor_key=TRUE)
 }
 ```
 
 ``` r
-ggplot(data=cmip6_2041_2060_exsd %>% subset(1:4) %>% mask_habitat)+
+out <- cmip6_2041_2060_exsd %>% subset(1:4) %>% mask_habitat
+out$var <- factor(out$var, labels=c("Delta~POC~flux~(sigma)", "Delta~DO~(sigma)", "Delta~pH~(sigma)", "Delta~Temperature~(sigma)"))
+
+ggplot(data=out)+
   geom_violin(aes(x=Habitat, y=value))+
-  facet_wrap(~var, scales="free", nrow=2)+
+  facet_wrap(~var, scales="free", nrow=2, labeller=label_parsed)+
   labs(y="Climate Change Hazards")
 ```
 
@@ -187,15 +195,20 @@ standard deviation of the mean account for about 68% of the set, while
 values within two standard deviations account for about 95%.
 
 ``` r
-plot_fun(cmip6_extoe_early %>% subset(1:4) %>% mask(eez), colours = brewer.pal(10, 'RdYlBu'), q_limits = c(0, 1))
+plot_fun(cmip6_extoe_constant %>% subset(1:4) %>% mask(eez), colours = brewer.pal(10, 'RdYlBu'), 
+         vt=c("When~Delta~POC~flux>2*sigma", "When~Delta~DO>2*sigma", "When~Delta~pH>2*sigma", "When~Delta~Temperature>2*sigma"),
+         q_limits = c(0, 1))
 ```
 
 ![](tute2_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 ``` r
-ggplot(data=cmip6_extoe_early %>% subset(1:4) %>% mask_habitat)+
+out <- cmip6_extoe_constant %>% subset(1:4) %>% mask_habitat
+out$var <- factor(out$var, labels=c("When~Delta~POC~flux>2*sigma", "When~Delta~DO>2*sigma", "When~Delta~pH>2*sigma", "When~Delta~Temperature>2*sigma"))
+
+ggplot(data=out)+
   geom_violin(aes(x=Habitat, y=value))+
-  facet_wrap(~var, scales="free")+
+  facet_wrap(~var, scales="free", labeller=label_parsed)+
   labs(y="Time of Emergence of Climate Change")
 ```
 
@@ -206,21 +219,10 @@ dissolved oxygen, pH, and temperature simultaneously exceed twice the
 historical variability.
 
 ``` r
-all <- overlay(subset(cmip6_extoe_early, 1:4), fun=max)
-names(all) <- "cmip6_extoe_early"
+all <- overlay(subset(cmip6_extoe_constant, 1:4), fun=max) %>% mask(eez)
+names(all) <- "cmip6_extoe_constant"
 
-bathy <- etopo2022 %>% mask(eez) %>% as.data.frame(xy = TRUE) %>% na.omit
-p1 <- ggplot(all%>% mask(eez) %>% as.data.frame(xy = TRUE) %>% na.omit) +
-      geom_raster(aes(x=x, y=y, fill=cmip6_extoe_early))+
-      geom_polygon(data=arg, aes(x=X, y=Y, group=PID), fill="bisque2", colour="transparent")+
-      #geom_sf(data=as(eez, "sf"), fill="transparent", colour="red")+
-      geom_contour(data=bathy, aes(x=x, y=y, z=layer), breaks=-200, linetype=2, colour="gray50")+
-      geom_contour(data=bathy, aes(x=x, y=y, z=layer), breaks=-4000, linetype=1, colour="gray50")+
-      scale_fill_gradientn(colours=brewer.pal(10, 'RdYlBu'))+
-      scale_x_continuous(expand = expansion(mult = 0))+
-      scale_y_continuous(expand = expansion(mult = 0))+
-      labs(x=NULL, y=NULL, fill=NULL)+
-      theme_bw() %+replace% theme(legend.position = "right", legend.key.height =  unit(1.8, 'cm'))
+p1 <- plot_fun(r=all, vt="When~climate~change>2*sigma", colours=brewer.pal(10, 'RdYlBu'), q_limits = c(0, 1))
 
 # Violin plots
 p2 <- ggplot(data=mask_habitat(all))+
@@ -264,15 +266,20 @@ cum_imp <- function(r){
 ```
 
 ``` r
-plot_fun(r=cum_imp(cmip6_2041_2060_exsd) %>% mask(eez))
+plot_fun(r=cum_imp(cmip6_2041_2060_exsd) %>% mask(eez),
+         vt=c("Cumulative~negative~impact~(sigma)", "Cumulative~positivce~impact~(sigma)")
+         )
 ```
 
 ![](tute2_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
 
 ``` r
-ggplot(data=cum_imp(cmip6_2041_2060_exsd) %>% mask_habitat)+
+out <- cum_imp(cmip6_2041_2060_exsd) %>% mask_habitat
+out$var <- factor(out$var, labels=c("Cumulative~negative~impact~(sigma)", "Cumulative~positivce~impact~(sigma)"))
+
+ggplot(data=out)+
   geom_violin(aes(x=Habitat, y=value))+
-  facet_wrap(~var, scales="free")+
+  facet_wrap(~var, scales="free", labeller=label_parsed)+
   labs(y="Cumulative Climate Change Impact")
 ```
 
@@ -295,15 +302,21 @@ gradient-based climate velocity magnitudes from 2041 to 2060 within
 Argentina EEZ.
 
 ``` r
-plot_fun(cmip6_2041_2060_voccMeg %>% subset(1:4) %>% mask(eez), q_limits=c(0.01, 0.99))
+plot_fun(r=cmip6_2041_2060_voccMeg %>% subset(1:4) %>% mask(eez),
+         vt = c("POC~flux~(km~yr^-1)", "DO~(km~yr^-1)", "pH~(km~yr^-1)", "Temperature~(km~yr^-1)"),
+         q_limits=c(0.01, 0.99)
+         )
 ```
 
 ![](tute2_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
 
 ``` r
-ggplot(data=cmip6_2041_2060_voccMeg %>% subset(1:4) %>% mask_habitat)+
+out <- cmip6_2041_2060_voccMeg %>% subset(1:4) %>% mask_habitat
+out$var <- factor(out$var, labels=c("POC~flux~(km~yr^-1)", "DO~(km~yr^-1)", "pH~(km~yr^-1)", "Temperature~(km~yr^-1)"))
+
+ggplot(data=out)+
   geom_violin(aes(x=Habitat, y=value))+
-  facet_wrap(~var, scales="free")+
+  facet_wrap(~var, scales="free", labeller=label_parsed)+
   labs(y="Climate Velocity Magnitudes")
 ```
 
@@ -320,15 +333,20 @@ ocean basification, and ocean cooling can be considered as cumulative
 positive impacts.
 
 ``` r
-plot_fun(r=cum_imp(cmip6_2041_2060_voccMeg) %>% mask(eez), q_limits = c(0, 0.99))
+plot_fun(r=cum_imp(cmip6_2041_2060_voccMeg) %>% mask(eez), 
+         vt=c("Cumul.~negative~impact~(km~yr^-1)", "Cumul.~positivce~impact~(km~yr^-1)"),
+         q_limits = c(0, 0.99))
 ```
 
 ![](tute2_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
 
 ``` r
-ggplot(data=cum_imp(cmip6_2041_2060_voccMeg) %>% mask_habitat)+
+out <- cmip6_2041_2060_voccMeg %>% cum_imp %>% mask_habitat
+out$var <- factor(out$var, labels=c("Cumulative~negative~impact~(km~yr^-1)", "Cumulative~positivce~impact~(km~yr^-1)"))
+
+ggplot(data=out)+
   geom_violin(aes(x=Habitat, y=value))+
-  facet_wrap(~var, scales="free")+
+  facet_wrap(~var, scales="free", labeller=label_parsed)+
   labs(y="Cumulative Climate Change Impact")
 ```
 

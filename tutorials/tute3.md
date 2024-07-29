@@ -1,13 +1,14 @@
 Applying seafloor climate change data for habitat suitability modeling
 ================
 Chih-Lin Wei
-2024-07-28
+2024-07-29
 
 ``` r
 library(ArgentinaSSP126)
 library(ggplot2)
 library(dplyr)
 library(tidyr)
+library(RColorBrewer)
 library(sf)
 ```
 
@@ -62,7 +63,7 @@ head(hake[, c(6:7, 21)], 5) %>% kable
 |       -45.09917 |        -65.74970 | Merluccius hubbsi |
 |       -45.30000 |        -65.53333 | Merluccius hubbsi |
 
-There are a total of 2617 occurrence records within the [Argentina
+There are a total of 48181 occurrence records within the [Argentina
 EEZ](https://marineregions.org/gazetteer.php?p=details&id=8466). We can
 then overlay them on top of the
 [etopo2022](https://www.ncei.noaa.gov/products/etopo-global-relief-model)
@@ -83,7 +84,8 @@ ggplot(bathy) +
   scale_x_continuous(expand = expansion(mult = 0))+
   scale_y_continuous(expand = expansion(mult = 0))+
   labs(x=NULL, y=NULL, fill="Depth\n(m)")+
-  theme_bw() %+replace% theme(legend.position = "right", legend.key.width =  unit(0.5, 'cm'))
+  theme_bw() %+replace% theme(legend.position = "right", legend.key.width =  unit(0.5, 'cm'),
+                              strip.background = element_blank())
 ```
 
 ![](tute3_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
@@ -183,6 +185,7 @@ library(plyr)
 dat <- lapply(r, FUN=function(x){
   x %>% mask(eez) %>% as.data.frame(xy = TRUE) %>% na.omit %>% gather(-x, -y, key = "var", value = "value")
 }) %>% ldply(.id="Taxa")
+dat$var <- factor(dat$var, labels=c("2000s", "2050s", "2090s"))
 
 ggplot(dat) +
   geom_raster(aes(x=x, y=y, fill=value))+
@@ -192,7 +195,7 @@ ggplot(dat) +
   geom_contour(data=bathy, aes(x=x, y=y, z=layer), breaks=-4000, linetype=1, colour="gray50")+
   #geom_point(data=occ, aes(x=decimalLongitude, y=decimalLatitude), size=0.2)+
   facet_grid(var~Taxa)+
-  scale_fill_gradientn(colours=jet.colors2(10))+
+  scale_fill_gradientn(colours=brewer.pal(10, 'RdYlBu') %>% rev)+
   scale_x_continuous(expand = expansion(mult = 0))+
   scale_y_continuous(expand = expansion(mult = 0))+
   labs(x=NULL, y=NULL, fill="Habitat\nSuitability")+
