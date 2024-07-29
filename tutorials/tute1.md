@@ -1,7 +1,7 @@
 Display seafloor climate change data
 ================
 Chih-Lin Wei
-2024-07-28
+2024-07-29
 
 # Sealfoor climate change dataset
 
@@ -81,6 +81,15 @@ from 1950 to 2000. Let’s break down the steps to construct the map:
   [etopo2022](https://www.ncei.noaa.gov/products/etopo-global-relief-model)
   dataset.
 
+We can first call the documentation page to see what is inside.
+
+``` r
+help(etopo2022)
+```
+
+There is an example code within the documentation, but we can also draw
+the bathymetric map here.
+
 ``` r
 bathy <- etopo2022%>% as.data.frame(xy = TRUE) %>% na.omit
 ggplot(bathy) +
@@ -92,11 +101,11 @@ ggplot(bathy) +
       scale_fill_gradientn(colours=terrain.colors(7))+
       scale_x_continuous(expand = expansion(mult = 0))+
       scale_y_continuous(expand = expansion(mult = 0))+
-      labs(x=NULL, y=NULL, fill=NULL)+
-      theme_bw() %+replace% theme(legend.position = "top", legend.key.width =  unit(1, 'cm'))
+      labs(x=NULL, y=NULL, fill=NULL, title="Depth (m)")+
+      theme_bw() %+replace% theme(legend.position = "top", legend.key.width =  unit(1, 'cm'), plot.title = element_text(hjust=0.5))
 ```
 
-![](tute1_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
+![](tute1_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
 
 3.  Multipanel Maps with ggplot:
 
@@ -111,17 +120,19 @@ ggplot(bathy) +
 - For convenience, we define a custom plot function with three
   parameters:
   - r: A rasterbrick containing the data.
+  - vt: A character vector of the new raster titles
   - colours: A vector of colors to use for the color key.
   - limits: A numeric vector of length two providing quantile limits for
     the color key scale.
 
 ``` r
-plot_fun <- function(r, colours=NULL, q_limits=c(0.001, 0.999)){
+plot_fun <- function(r, vt=names(r), colours=NULL, q_limits=c(0.001, 0.999)){
   
   # Convert raster to data frame and then to list
-  cmip6_list <- as.data.frame(r, xy = TRUE) %>% na.omit %>%
-  gather(-x, -y, key = "var", value = "value") %>%
-  group_split(var)
+  cmip6 <- as.data.frame(r, xy = TRUE) %>% na.omit %>%
+  gather(-x, -y, key = "var", value = "value", factor_key = TRUE)
+  cmip6$var <- factor(cmip6$var, labels = vt)
+  cmip6_list <- cmip6 %>% group_split(var)
   
   # Depth
   bathy <- etopo2022%>% as.data.frame(xy = TRUE) %>% na.omit
@@ -151,9 +162,9 @@ plot_fun <- function(r, colours=NULL, q_limits=c(0.001, 0.999)){
       scale_fill_gradientn(colours=cols, limits=lims)+
       scale_x_continuous(expand = expansion(mult = 0))+
       scale_y_continuous(expand = expansion(mult = 0))+
-      labs(x=NULL, y=NULL, fill=NULL)+
+      labs(x=NULL, y=NULL, fill=NULL, title=parse(text=dat$var[1] %>% as.character))+
       facet_wrap(~ var) +
-      theme_bw() %+replace% theme(legend.position = "top", legend.key.width =  unit(1, 'cm'))
+      theme_bw() %+replace% theme(legend.position = "top", legend.key.width =  unit(1, 'cm'), plot.title = element_text(hjust=0.5), strip.background = element_blank(), strip.text = element_blank())
       })
   
   # Wrap ggplot list
@@ -165,13 +176,20 @@ plot_fun <- function(r, colours=NULL, q_limits=c(0.001, 0.999)){
 
 Here we used new function to plot the historical projections of export
 POC flux (epc), dissolved oxygen concentration (o2), pH values (ph), and
-potential temperature (thetao) from 1950 to 2000.
+potential temperature (thetao) from 1950 to 2000. Let’s look at the R
+documentation to see what is inside the raster brcik data.
 
 ``` r
-plot_fun(r=cmip6_1950_2000_av %>% subset(1:4), q_limits = c(0, 1))
+help("cmip6_1950_2000_av")
 ```
 
-![](tute1_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+``` r
+plot_fun(r = cmip6_1950_2000_av %>% subset(1:4), 
+         vt = c("POC~flux~(mgC~m^-2*d^-1)", "DO~(mol~m^-3)", "pH", "Temperature~(degree*C)"), 
+         q_limits = c(0, 1))
+```
+
+![](tute1_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 # Historical variability
 
@@ -180,10 +198,12 @@ oxygen concentration (o2), pH values (ph), and potential temperature
 (thetao) from 1950 to 2000 can also be displayed in the same manner.
 
 ``` r
-plot_fun(cmip6_1950_2000_sd %>% subset(1:4), q_limits = c(0, 1))
+plot_fun(r=cmip6_1950_2000_sd %>% subset(1:4), 
+         vt = c("POC~flux~(mgC~m^-2*d^-1)", "DO~(mol~m^-3)", "pH", "Temperature~(degree*C)"),
+         q_limits = c(0, 1))
 ```
 
-![](tute1_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+![](tute1_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 # Future projections
 
@@ -191,10 +211,12 @@ The seafloor projections from 2041 to 2060 can be plotted in the same
 way using the ensemble average.
 
 ``` r
-plot_fun(cmip6_2041_2060_av %>% subset(1:4), q_limits = c(0, 1))
+plot_fun(r=cmip6_2041_2060_av %>% subset(1:4), 
+         vt = c("POC~flux~(mgC~m^-2*d^-1)", "DO~(mol~m^-3)", "pH", "Temperature~(degree*C)"),
+         q_limits = c(0, 1))
 ```
 
-![](tute1_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](tute1_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
 # Climate changes between future and historical projections
 
@@ -203,23 +225,26 @@ We then plot the climate changes as the the difference between 1950 and
 the difference better.
 
 ``` r
-plot_fun(cmip6_2041_2060_ch %>% subset(1:4), q_limits = c(0, 1))
+plot_fun(r=cmip6_2041_2060_ch %>% subset(1:4), 
+         vt = c("Delta~POC~flux~(mgC~m^-2*d^-1)", "Delta~DO~(mol~m^-3)", "Delta~pH", "Delta~Temperature~(degree*C)"),
+         q_limits = c(0, 1))
 ```
 
-![](tute1_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](tute1_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 # Climate change hazards
 
-The custom plot function can visually display the relationship between
-climate change hazards and historical standard deviation. The color
-indicates the degree of climate change in terms of historical
-variability.
+The custom plot function can visually display the ratios between climate
+changes and historical standard deviation. The color indicates the
+degree of climate change in terms of historical variability.
 
 ``` r
-plot_fun(r=cmip6_2041_2060_exsd %>% subset(1:4))
+plot_fun(r=cmip6_2041_2060_exsd %>% subset(1:4),
+         vt = c("Delta~POC~flux~(sigma)", "Delta~DO~(sigma)", "Delta~pH~(sigma)", "Delta~Temperature~(sigma)"),
+         )
 ```
 
-![](tute1_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](tute1_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 # Time of emergence of climate changes
 
@@ -231,17 +256,19 @@ mean make up about 68% of the set, while values within two standard
 deviations make up about 95%.
 
 ``` r
-plot_fun(cmip6_extoe_early %>% subset(1:4), colours = brewer.pal(10, 'RdYlBu'), q_limits = c(0, 1))
+plot_fun(r=cmip6_extoe_constant %>% subset(1:4), 
+         vt=c("When~Delta~POC~flux~(sigma)>2", "When~Delta~DO~(sigma)>2", "When~Delta~pH~(sigma)>2", "When~Delta~Temperature~(sigma)>2"),
+         colours = brewer.pal(10, 'RdYlBu'), q_limits = c(0, 1))
 ```
 
-![](tute1_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](tute1_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 Here, we combine the four panels above to demonstrate the years when
 climate changes for export POC flux, dissolved oxygen, pH, and
 temperature simultaneously exceed twice the historical variability.
 
 ``` r
-all <- overlay(subset(cmip6_extoe_early, 1:4), fun=max) %>% as.data.frame(xy = TRUE) %>% na.omit
+all <- overlay(subset(cmip6_extoe_constant, 1:4), fun=max) %>% as.data.frame(xy = TRUE) %>% na.omit
 bathy <- etopo2022%>% as.data.frame(xy = TRUE) %>% na.omit
 ggplot(all) +
       geom_raster(aes(x=x, y=y, fill=layer))+
@@ -252,12 +279,11 @@ ggplot(all) +
       scale_fill_gradientn(colours=brewer.pal(10, 'RdYlBu'))+
       scale_x_continuous(expand = expansion(mult = 0))+
       scale_y_continuous(expand = expansion(mult = 0))+
-      labs(x=NULL, y=NULL, fill=NULL)+
-      
-      theme_bw() %+replace% theme(legend.position = "top", legend.key.width =  unit(1, 'cm'))
+      labs(x=NULL, y=NULL, fill=NULL, title=expression(When~climate~change>2*sigma))+
+      theme_bw() %+replace% theme(legend.position = "top", legend.key.width =  unit(1, 'cm'), plot.title = element_text(hjust=0.5), strip.background = element_blank(), strip.text = element_blank())
 ```
 
-![](tute1_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](tute1_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 # Cumulative impact of climate change hazards
 
@@ -290,10 +316,12 @@ cum_imp <- function(r){
 ```
 
 ``` r
-plot_fun(r=cum_imp(cmip6_2041_2060_exsd))
+plot_fun(r=cmip6_2041_2060_exsd %>% cum_imp,
+         vt=c("Cumulative~negative~impact~(sigma)", "Cumulative~positivce~impact~(sigma)")
+         )
 ```
 
-![](tute1_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+![](tute1_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
 
 # Climate velocity
 
@@ -311,10 +339,12 @@ climate velocities. In our example, we display the average seafloor
 gradient-based climate velocity magnitudes from 2041 to 2060.
 
 ``` r
-plot_fun(cmip6_2041_2060_voccMeg %>% subset(1:4), q_limits=c(0.01, 0.99))
+plot_fun(r=cmip6_2041_2060_voccMeg %>% subset(1:4), 
+         vt = c("POC~flux~(km~yr^-1)", "DO~(km~yr^-1)", "pH~(km~yr^-1)", "Temperature~(km~yr^-1)"),
+         q_limits=c(0.01, 0.99))
 ```
 
-![](tute1_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+![](tute1_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
 
 # Cumulative impact based on climate velocity
 
@@ -327,7 +357,9 @@ ocean basification, and ocean cooling can be considered as cumulative
 positive impacts.
 
 ``` r
-plot_fun(r=cum_imp(cmip6_2041_2060_voccMeg), q_limits = c(0, 0.99))
+plot_fun(r=cmip6_2041_2060_voccMeg %>% cum_imp, 
+         vt=c("Cumulative~negative~impact~(km~yr^-1)", "Cumulative~positivce~impact~(km~yr^-1)"),
+         q_limits = c(0, 0.99))
 ```
 
-![](tute1_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+![](tute1_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->

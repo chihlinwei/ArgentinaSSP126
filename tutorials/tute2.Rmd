@@ -42,25 +42,27 @@ ggplot(bathy) +
       scale_fill_gradientn(colours=terrain.colors(7))+
       scale_x_continuous(expand = expansion(mult = 0))+
       scale_y_continuous(expand = expansion(mult = 0))+
-      labs(x=NULL, y=NULL, fill="Depth\n(m)")+
-      theme_bw() %+replace% theme(legend.position = "top", legend.key.width =  unit(1, 'cm'))
+      labs(x=NULL, y=NULL, fill=NULL, title="Depth (m)")+
+      theme_bw() %+replace% theme(legend.position = "top", legend.key.width =  unit(1, 'cm'), plot.title = element_text(hjust=0.5))
 ```
 
 We can use the same [ggplot](https://ggplot2.tidyverse.org/) wrap function to generate multi-panel plots. The custom plot function use the same three parameters, including:
-  + r: A rasterbrick containing the data.
+ + r: A rasterbrick containing the data.
+  + vt: A character vector of the new raster titles
   + colours: A vector of colors to use for the color key.
   + limits: A numeric vector of length two providing quantile limits for the color key scale.
 
 ```{r}
-plot_fun <- function(r, colours=NULL, q_limits=c(0.001, 0.999)){
+plot_fun <- function(r, vt=names(r), colours=NULL, q_limits=c(0.001, 0.999)){
   
   # Convert raster to data frame and then to list
-  cmip6_list <- as.data.frame(r, xy = TRUE) %>% na.omit %>%
-  gather(-x, -y, key = "var", value = "value") %>%
-  group_split(var)
+  cmip6 <- as.data.frame(r, xy = TRUE) %>% na.omit %>%
+  gather(-x, -y, key = "var", value = "value", factor_key = TRUE)
+  cmip6$var <- factor(cmip6$var, labels = vt)
+  cmip6_list <- cmip6 %>% group_split(var)
   
   # Depth
-  bathy <- mask(etopo2022, eez)%>% as.data.frame(xy = TRUE) %>% na.omit
+  bathy <- etopo2022%>% as.data.frame(xy = TRUE) %>% na.omit
   
   # ggolot list
   gg_list = lapply(cmip6_list, function(dat) {
@@ -81,17 +83,15 @@ plot_fun <- function(r, colours=NULL, q_limits=c(0.001, 0.999)){
     ggplot(dat) +
       geom_raster(aes(x=x, y=y, fill=value))+
       geom_polygon(data=arg, aes(x=X, y=Y, group=PID), fill="bisque2", colour="transparent")+
-      #geom_sf(data=as(eez, "sf"), fill="transparent", colour="red")+
+      geom_sf(data=as(eez, "sf"), fill="transparent", colour="red")+
       geom_contour(data=bathy, aes(x=x, y=y, z=layer), breaks=-200, linetype=2, colour="gray50")+
       geom_contour(data=bathy, aes(x=x, y=y, z=layer), breaks=-4000, linetype=1, colour="gray50")+
-      #geom_sf(data=as(canyon, "sf"), colour="blue")+
-      #geom_sf(data=as(seamount, "sf"), size=0.5, colour="red")+
       scale_fill_gradientn(colours=cols, limits=lims)+
       scale_x_continuous(expand = expansion(mult = 0))+
       scale_y_continuous(expand = expansion(mult = 0))+
-      labs(x=NULL, y=NULL, fill=NULL)+
+      labs(x=NULL, y=NULL, fill=NULL, title=parse(text=dat$var[1] %>% as.character))+
       facet_wrap(~ var) +
-      theme_bw() %+replace% theme(legend.position = "top", legend.key.width =  unit(1, 'cm'))
+      theme_bw() %+replace% theme(legend.position = "top", legend.key.width =  unit(1, 'cm'), plot.title = element_text(hjust=0.5), strip.background = element_blank(), strip.text = element_blank())
       })
   
   # Wrap ggplot list
