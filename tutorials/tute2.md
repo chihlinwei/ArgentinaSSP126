@@ -1,7 +1,7 @@
 Extract seafloor climate change data by polygon, polyline, or points
 ================
 Chih-Lin Wei
-2024-07-29
+2024-07-30
 
 ``` r
 library(ArgentinaSSP126)
@@ -15,19 +15,18 @@ library(sf)
 
 # Seafloor habitats within Argentina EEZ
 
-In this analysis, we want to extract and display the seafloor climate
-change data for [Argentina
-EEZ](https://marineregions.org/gazetteer.php?p=details&id=8466). We can
-do that by
-[mask](https://www.rdocumentation.org/packages/raster/versions/3.6-26/topics/mask)
+In this analysis, we want to extract and display [Argentina
+EEZ’s](https://marineregions.org/gazetteer.php?p=details&id=8466)
+seafloor climate change data. We can do that by
+[mask](https://www.rdocumentation.org/packages/raster/versions/3.6-26/topics/mask)ing
 the
 [etopo2022](https://www.ncei.noaa.gov/products/etopo-global-relief-model)
-raster with Argentina EEZ. We can see that the Argentina EEZ consisting
-of continental shelf (0-200 m) and continental slope (200-4000 m). The
-shelf is indicated by gray dashed contour lines and slope by gray solid
-contour lines. Additionally, submarine canyons [(Harris and Whitway,
-2011)](https://doi.org/10.1016/j.margeo.2011.05.008) are indicated by
-blue solid lines, seamounts [(Kim and Wessel,
+raster with Argentina EEZ. We can see that the Argentina EEZ consists of
+continental shelf (0-200 m) and continental slope (200-4000 m). The
+shelf is indicated by gray dashed contour lines and the slope by gray
+solid contour lines. Additionally, submarine canyons [(Harris and
+Whitway, 2011)](https://doi.org/10.1016/j.margeo.2011.05.008) are
+indicated by blue solid lines, seamounts [(Kim and Wessel,
 2011)](https://doi.org/10.1111/j.1365-246X.2011.05076.x) by red dots,
 and cold water corals [(CWC)](http://data.unep-wcmc.org/datasets/3) by
 black dots.
@@ -54,10 +53,13 @@ ggplot(bathy) +
 
 We can use the same [ggplot](https://ggplot2.tidyverse.org/) wrap
 function to generate multi-panel plots. The custom plot function use the
-same three parameters, including: + r: A rasterbrick containing the
-data. + vt: A character vector of the new raster titles + colours: A
-vector of colors to use for the color key. + limits: A numeric vector of
-length two providing quantile limits for the color key scale.
+same four parameters, including:
+
+- r: A rasterbrick containing the data.
+- vt: A character vector of the new raster titles
+- colours: A vector of colors to use for the color key.
+- limits: A numeric vector of length two providing quantile limits for
+  the color key scale.
 
 ``` r
 plot_fun <- function(r, vt=names(r), colours=NULL, q_limits=c(0.001, 0.999)){
@@ -110,14 +112,13 @@ plot_fun <- function(r, vt=names(r), colours=NULL, q_limits=c(0.001, 0.999)){
 
 For example, we can mask the climate change hazards between 2041 and
 2060 by the Argentina EEZ polygon. The following maps show the degree of
-climate change (or climate change hazards) by 2041 to 2060 in the unit
-of historical variability during 1951 to 2000. We can see the variations
+climate change (or climate change hazards) from 2041 to 2060 in the unit
+of historical variability from 1951 to 2000. We can see the variations
 within the EEZ better this way.
 
 ``` r
 plot_fun(r=cmip6_2041_2060_exsd %>% subset(1:4) %>% mask(eez),
-         vt = c("Delta~POC~flux~(sigma)", "Delta~DO~(sigma)", "Delta~pH~(sigma)", "Delta~Temperature~(sigma)")
-         )
+         vt = c("Delta~POC~flux~(sigma)", "Delta~DO~(sigma)", "Delta~pH~(sigma)", "Delta~Temperature~(sigma)"))
 ```
 
 ![](tute2_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
@@ -127,8 +128,7 @@ submarine canyons
 
 ``` r
 plot_fun(r=cmip6_2041_2060_exsd %>% subset(1:4) %>% mask(canyon),
-         vt = c("Delta~POC~flux~(sigma)", "Delta~DO~(sigma)", "Delta~pH~(sigma)", "Delta~Temperature~(sigma)")
-         )
+         vt = c("Delta~POC~flux~(sigma)", "Delta~DO~(sigma)", "Delta~pH~(sigma)", "Delta~Temperature~(sigma)"))
 ```
 
 ![](tute2_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
@@ -147,10 +147,10 @@ plot_fun(r=out, vt = c("Delta~POC~flux~(sigma)", "Delta~DO~(sigma)", "Delta~pH~(
 
 Here, we mask the raster layers of climate change hazards by spatial
 objects (i.e., polygons, polylines, or spatial points) and use violin
-plots to show the climate change hazards by 2041 to 2060 within
-Argentina EEZ separated by 200-m depth contour (i.e., continental shelf
-vs. slope). We can also show the projections of submarine canyons and
-seamounts within the EEZ.
+plots to show the climate change hazards from 2041 to 2060 within
+Argentina EEZ separated by a 200-m depth contour (i.e., continental
+shelf vs. slope). We can also show the projections of submarine canyons
+and seamounts within the EEZ together.
 
 ``` r
 # Custom function to mask habitats
@@ -189,7 +189,7 @@ ggplot(data=out)+
 
 The following maps and violin plots illustrate when climate changes
 exceed two times the historical standard deviation (or the year when the
-value of climate change hazards \> 2). We use two times the standard
+value of climate change hazards \> 2). We use two times of the standard
 deviation because in a roughly normal data set, values within one
 standard deviation of the mean account for about 68% of the set, while
 values within two standard deviations account for about 95%.
@@ -267,8 +267,7 @@ cum_imp <- function(r){
 
 ``` r
 plot_fun(r=cum_imp(cmip6_2041_2060_exsd) %>% mask(eez),
-         vt=c("Cumulative~negative~impact~(sigma)", "Cumulative~positivce~impact~(sigma)")
-         )
+         vt=c("Cumulative~negative~impact~(sigma)", "Cumulative~positivce~impact~(sigma)"))
 ```
 
 ![](tute2_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
@@ -287,19 +286,18 @@ ggplot(data=out)+
 
 # Climate velocity
 
-An important factor for the survival of species is how quickly they need
-to move to adjust to current environmental conditions and keep up with
+An important factor for species’ survival is how quickly they need to
+move to adjust to current environmental conditions and keep up with
 climate changes. Local climate velocity can be calculated by measuring
 the rate of change of a specific variable (like temperature) over time
 and dividing it by the corresponding spatial gradient of that variable
 within a 3x3 area. Areas with low local climate velocities may be good
-candidates for protection, as they could potentially act as climatic
-refuges and are often associated with high levels of endemic species.
-It’s important to note that in deep seafloor environments, like the
-abyssal plain, the spatial gradient may be small, resulting in high
-climate velocities. In our example, we display the average seafloor
-gradient-based climate velocity magnitudes from 2041 to 2060 within
-Argentina EEZ.
+candidates for protection, as they could act as climatic refuges and are
+often associated with high levels of endemic species. It’s important to
+note that in deep seafloor environments, like the abyssal plain, the
+spatial gradient may be small, resulting in high climate velocities. Our
+example shows the average seafloor gradient-based climate velocity
+magnitudes from 2041 to 2060 within Argentina EEZ.
 
 ``` r
 plot_fun(r=cmip6_2041_2060_voccMeg %>% subset(1:4) %>% mask(eez),
@@ -325,12 +323,12 @@ ggplot(data=out)+
 # Cumulative impact based on climate velocity
 
 We can calculate the overall negative impact of climate velocity by
-taking into account the impacts of decreasing food supply,
-deoxygenation, acidification, and warming, as well as the positive
-impact of increasing food supply, oxygen levels, ocean basification, and
-cooling. Conversely, the increase in export POC flux, oxygen levels,
-ocean basification, and ocean cooling can be considered as cumulative
-positive impacts.
+considering the impacts of decreasing food supply, deoxygenation,
+acidification, and warming, as well as the positive impacts of
+increasing food supply, oxygen levels, ocean basification, and cooling.
+Conversely, the increase in export POC flux, oxygen levels, ocean
+basification, and ocean cooling can be considered cumulative positive
+impacts.
 
 ``` r
 plot_fun(r=cum_imp(cmip6_2041_2060_voccMeg) %>% mask(eez), 

@@ -10,7 +10,7 @@ A RasterBrick object of 11 raster layers:
   \item{epc_sd_1950_to_2000}{Export POC flux to seafloor (mg C m^-2 d^-1)}
   \item{o2_sd_1950_to_2000}{Dissolved oxygen concentration at seafloor (mol m^-3)}
   \item{ph_sd_1950_to_2000}{pH at seafloor}
-  \item{thetao_sd_1950_to_2000}{Potential temperature at seafllor (K)}
+  \item{thetao_sd_1950_to_2000}{Potential temperature at seafllor (C)}
   \item{arag_sd_1950_to_2000}{Aragonite Concentration (mol m-3)}
   \item{calc_sd_1950_to_2000}{Calcite Concentration (mol m-3)}
   \item{co3_sd_1950_to_2000}{Mole Concentration of Carbonate expressed as Carbon in Sea Water (mol m-3)}

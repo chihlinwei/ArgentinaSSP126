@@ -1,7 +1,7 @@
 Applying seafloor climate change data for habitat suitability modeling
 ================
 Chih-Lin Wei
-2024-07-29
+2024-07-30
 
 ``` r
 library(ArgentinaSSP126)
@@ -14,7 +14,7 @@ library(sf)
 
 # Species occurrence data
 
-We download Argentine hake, Argentina red shrimp, Chilean king crab,
+We downloaded Argentine hake, Argentina red shrimp, Chilean king crab,
 Shortfin sand skate, and Demospongiae occurrence data from
 [OBIS](https://obis.org/area/7) using the
 [occurrence](https://www.rdocumentation.org/packages/robis/versions/2.11.3/topics/occurrence)
@@ -22,7 +22,7 @@ function from the
 [robis](https://www.rdocumentation.org/packages/robis/versions/2.11.3)
 package. You may choose any other species from
 [OBIS](https://obis.org/area/7) and no. 7 is the area ID for Argentina.
-Additionally, occurrence of cold water corals were downloaded from
+Additionally, the occurrence of cold water corals were downloaded from
 [UNEP-WCMC](https://data.unep-wcmc.org/datasets/3).
 
 ``` r
@@ -98,17 +98,18 @@ data for simple habitat suitability modeling using
 from the
 [dismo](https://www.rdocumentation.org/packages/dismo/versions/1.3-14)
 package. Here, we’d like to model the species occurrence using the
-historical projection from 1950 to 2000 and then use the
+historical projection from 1950 to 2000 and then the
 [Maxent](https://www.rdocumentation.org/packages/dismo/versions/1.3-14/topics/maxent)
-model to predict their habitat suitability in 2041 to 2060 and 2081 and
+model to predict their habitat suitability in 2041 to 2060 and 2081 to
 2100. Therefore, we need three sets of annual average of the climate
 change projections for 1950 to 2000, 2041 to 2060, and 2081 to 2100.
 Because water depth is usually the most critical factor controlling the
 species distribution in the deep sea, we also add the
 [etopo2022](https://www.ncei.noaa.gov/products/etopo-global-relief-model)
 global relief model into the predictors. The predictor names are
-modified (e.g., removing the years) to be consistent across three
-periods for the convenience of modeling and predictions.
+modified (e.g., removing the years) to be consistent across 1950 to
+2000, 2041 to 2060, and 2081 to 2100 for the convenience of modeling and
+predictions.
 
 ``` r
 hist <- addLayer(etopo2022, cmip6_1950_2000_av)
@@ -127,7 +128,7 @@ The commands in
 [Maxent](https://www.rdocumentation.org/packages/dismo/versions/1.3-14/topics/maxent)
 are pretty simple. We only need a raster brick of predictors and
 coordinates of species occurrence to create a model. The historical and
-future species habitat suitability can then be
+future species’ habitat suitability can be
 [predicted](https://www.rdocumentation.org/packages/dismo/versions/1.3-14/topics/predict)
 using seafloor climate change data and the Maxent model. As a
 demonstration, we will skip all other details, such as the model
@@ -175,8 +176,9 @@ raster::extract(hist, occ[,c("decimalLongitude", "decimalLatitude")]) %>% head(5
 # Habitat suitability projections
 
 Finally, we map the projected habitat suitability of Argentine hake,
-Coldwater coral, and Demosponge for the years 1950 to 2000, 2041 to
-2060, and 2081 to 2100, respectively.
+Argentina red shrimp, Chilean king crab, Shortfin sand skate,
+Demosponge, and Coldwater coral for the years 1951 to 2000 (2000s), 2041
+to 2060 (2050s), and 2081 to 2100 (2090s), respectively.
 
 ``` r
 library(plyr)

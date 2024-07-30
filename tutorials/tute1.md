@@ -1,7 +1,7 @@
 Display seafloor climate change data
 ================
 Chih-Lin Wei
-2024-07-29
+2024-07-30
 
 # Sealfoor climate change dataset
 
@@ -11,11 +11,12 @@ Argentina’s Exclusive Economic Zone (EEZ). Yearly means were calculated
 from five climate models: GFDL-ESM4, IPSL-CM6A-LR, MPI-ESM1-2-LR,
 CNRM-ESM2-1, and NorESM2-MM, as part of the Coupled Models
 Intercomparison Project Phase 6 (CMIP6). The ensemble averages were
-computed for three time periods: 1950 to 2000, 2041 to 2060, and 2081 to
-2100. The export flux of particulate organic carbon (POC) at the
-seafloor was derived from export production at 100 meters depth (epc100)
-using the Martin curve (Martin et al., 1987). The equation for the
-export POC flux is given
+computed from 1950 to 2000, 2041 to 2060, and 2081 to 2100. The export
+flux of particulate organic carbon (POC) at the seafloor was derived
+from export production at 100 meters depth (epc100) using the Martin
+curve [(Martin et al.,
+1987)](https://www.sciencedirect.com/science/article/pii/0198014987900860).
+The equation for the export POC flux is given
 by:$Flux = epc100*(depth/export\:depth)^{-0.858}$.
 
 The depth information is based on the
@@ -26,21 +27,21 @@ saturation state (calcsat) as the ratio of carbonate concentration (co3)
 to the carbonate concentration in equilibrium with aragonite (co3satarg)
 and calcite (co3satcalc), respectively. It’s important to note that
 co3satarg and aragsat were only available from the GFDL-ESM4 and
-NorESM2-MM models. All CMIP6 data were download from [Earth System Grid
-Federation (ESGF)](https://esgf.llnl.gov/).
+NorESM2-MM models. All CMIP6 data were downloaded from [Earth System
+Grid Federation (ESGF)](https://esgf.llnl.gov/).
 
-We can utilize this data to determine the occurrence and impact of
+We can utilize this dataset to determine the occurrence and impact of
 climate change hazards on deep-sea floors. As biological communities
 adapt to long-term stability or variability in environmental conditions,
 we can establish the historical variability (standard deviation between
 1951-2000) as a reference point. Climate change can then be defined as
 the disparity between future conditions and the historical average.
 Climate change hazard, meanwhile, is the ratio of climate change to
-historical variability. The time of emergence of climate change is
+historical variability. The time of emergence (ToE) of climate change is
 identified as the point when future climate changes exceed twice the
 historical variability. This approach allows us to standardize climate
 change hazards across different variables, using their historical
-variability as a common unit. For instance, a specific variable’s
+variability as a standard unit. For instance, a specific variable’s
 climate hazard could be 10 or 100 times its historical variability.
 
 # Display the data using custom plot function
@@ -69,8 +70,9 @@ from 1950 to 2000. Let’s break down the steps to construct the map:
   o2, ph, and thetao into a data frame.
 - Next, we stack the data frame using the
   [gather](https://tidyr.tidyverse.org/reference/gather.html) function
-  and split the stacked data frame into a list based on epc, o2, ph, and
-  thetao.
+  and
+  [group_split](https://dplyr.tidyverse.org/reference/group_split.html)
+  the stacked data frame into a list based on epc, o2, ph, and thetao.
 
 2.  Bathymetric Data and Argentina EEZ:
 
@@ -113,7 +115,8 @@ ggplot(bathy) +
   [ggplot](https://ggplot2.tidyverse.org/). Each panel corresponds to
   one of the four variables (epc, o2, ph, thetao).
 - To ensure independent color keys for each panel, we create a ggplot
-  list of four maps. Finally, we wrap the ggplot list using wrap_plots.
+  list of four maps. Finally, we wrap the ggplot list using
+  [wrap_plots](https://patchwork.data-imaginist.com/reference/wrap_plots.html).
 
 4.  Custom Plot Function:
 
@@ -174,10 +177,10 @@ plot_fun <- function(r, vt=names(r), colours=NULL, q_limits=c(0.001, 0.999)){
 
 # Historical projections
 
-Here we used new function to plot the historical projections of export
-POC flux (epc), dissolved oxygen concentration (o2), pH values (ph), and
-potential temperature (thetao) from 1950 to 2000. Let’s look at the R
-documentation to see what is inside the raster brcik data.
+Here we used the new plot function to map the historical projections of
+export POC flux (epc), dissolved oxygen concentration (o2), pH values
+(ph), and potential temperature (thetao) from 1950 to 2000. Let’s look
+at the R documentation to see what’s inside the raster brick data.
 
 ``` r
 help("cmip6_1950_2000_av")
@@ -220,7 +223,7 @@ plot_fun(r=cmip6_2041_2060_av %>% subset(1:4),
 
 # Climate changes between future and historical projections
 
-We then plot the climate changes as the the difference between 1950 and
+We then map the climate changes as the the difference between 1950 and
 2000 and 2041 to 2060. Here, we should modify the color key to visualize
 the difference better.
 
@@ -236,7 +239,7 @@ plot_fun(r=cmip6_2041_2060_ch %>% subset(1:4),
 
 The custom plot function can visually display the ratios between climate
 changes and historical standard deviation. The color indicates the
-degree of climate change in terms of historical variability.
+degree of climate change in the unit of historical variability.
 
 ``` r
 plot_fun(r=cmip6_2041_2060_exsd %>% subset(1:4),
@@ -263,7 +266,7 @@ plot_fun(r=cmip6_extoe_constant %>% subset(1:4),
 
 ![](tute1_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
-Here, we combine the four panels above to demonstrate the years when
+We can combine the four panels above to demonstrate the years when
 climate changes for export POC flux, dissolved oxygen, pH, and
 temperature simultaneously exceed twice the historical variability.
 
@@ -282,9 +285,9 @@ climate change hazards. These hazards are caused by declining export POC
 flux, deoxygenation, ocean acidification, and ocean warming, and are
 considered to have cumulative negative impacts. On the contrary,
 increasing export POC flux, oxygenation, ocean basification, and ocean
-cooling can be considered to have cumulative positive impacts. Here, we
-have also created a function to calculate cumulative negative and
-positive impacts caused by climate change hazards.
+cooling can have cumulative positive impacts. Here, we have also created
+a function to calculate cumulative negative and positive impacts caused
+by climate change hazards.
 
 ``` r
 cum_imp <- function(r){
@@ -315,18 +318,18 @@ plot_fun(r=cmip6_2041_2060_exsd %>% cum_imp,
 
 # Climate velocity
 
-An important factor for the survival of species is how quickly they need
-to move to adjust to current environmental conditions and keep up with
+An essential factor for species’ survival is how quickly they need to
+move to adjust to current environmental conditions and keep up with
 climate changes. Local climate velocity can be calculated by measuring
 the rate of change of a specific variable (like temperature) over time
 and dividing it by the corresponding spatial gradient of that variable
 within a 3x3 area. Areas with low local climate velocities may be good
-candidates for protection, as they could potentially act as climatic
-refuges and are often associated with high levels of endemic species.
-It’s important to note that in deep seafloor environments, like the
-abyssal plain, the spatial gradient may be small, resulting in high
-climate velocities. In our example, we display the average seafloor
-gradient-based climate velocity magnitudes from 2041 to 2060.
+candidates for protection, as they could act as climatic refuges and are
+often associated with high levels of endemic species. It’s important to
+note that in deep seafloor environments, like the abyssal plain, the
+spatial gradient may be small, resulting in high climate velocities. Our
+example displays the average seafloor gradient-based climate velocity
+magnitudes from 2041 to 2060.
 
 ``` r
 plot_fun(r=cmip6_2041_2060_voccMeg %>% subset(1:4), 
@@ -339,12 +342,11 @@ plot_fun(r=cmip6_2041_2060_voccMeg %>% subset(1:4),
 # Cumulative impact based on climate velocity
 
 We can calculate the overall negative impact of climate velocity by
-taking into account the impacts of decreasing food supply,
-deoxygenation, acidification, and warming, as well as the positive
-impact of increasing food supply, oxygen levels, ocean basification, and
-cooling. Conversely, the increase in export POC flux, oxygen levels,
-ocean basification, and ocean cooling can be considered as cumulative
-positive impacts.
+considering the impacts of decreasing food supply, deoxygenation,
+acidification, and warming, as well as the positive impact of increasing
+food supply, oxygen levels, ocean basification, and cooling. Conversely,
+the increase in export POC flux, oxygen levels, ocean basification, and
+ocean cooling can be considered cumulative positive impacts.
 
 ``` r
 plot_fun(r=cmip6_2041_2060_voccMeg %>% cum_imp, 

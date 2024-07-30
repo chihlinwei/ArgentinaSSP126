@@ -11,7 +11,7 @@
 #'   \item{epc_sd_2081_to_2100}{Export POC flux to seafloor (mg C m^-2 d^-1)}
 #'   \item{o2_sd_2081_to_2100}{Dissolved oxygen concentration at seafloor (mol m^-3)}
 #'   \item{ph_sd_2081_to_2100}{pH at seafloor}
-#'   \item{thetao_sd_2081_to_2100}{Potential temperature at seafllor (K)}
+#'   \item{thetao_sd_2081_to_2100}{Potential temperature at seafllor (C)}
 #'   \item{arag_sd_2081_to_2100}{Aragonite Concentration (mol m-3)}
 #'   \item{calc_sd_2081_to_2100}{Calcite Concentration (mol m-3)}
 #'   \item{co3_sd_2081_to_2100}{Mole Concentration of Carbonate expressed as Carbon in Sea Water (mol m-3)}
