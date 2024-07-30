@@ -1,8 +1,8 @@
-#' Data package for seafloor climage change (ArgentinaSSP126)
+#' Data package for seafloor climage change (ArgentinaSSP585)
 #'
-#' ArgentinaSSP126 package contains ensemble model average of CMIP6 historical and ssp126 climate change projections on the seafloor for Argentina EEZ.
+#' ArgentinaSSP585 package contains ensemble model average of CMIP6 historical and ssp585 climate change projections on the seafloor for Argentina EEZ.
 #' Yearly mean were calculated from GFDL-ESM4, IPSL-CM6A-LR, MPI-ESM1-2-LR, CNRM-ESM2-1, and NorESM2-MM within the Coupled Models Intercomparison Project Phase 6 (cmip6), respectively.
-#' The ensemble averages of various model statistics were calculated among the five models for the periods of 1950 to 2000 (historial), 2041 to 2060 (ssp126) and 2081 to 2100 (ssp126).
+#' The ensemble averages of various model statistics were calculated among the five models for the periods of 1950 to 2000 (historial), 2041 to 2060 (ssp585) and 2081 to 2100 (ssp585).
 #' The export POC flux at seafloor was computed from the export production at 100 m (epc100) using the Martin curve (Martin et al., 1987)
 #' following the quation: \eqn{Flux = epc100*(depth/export depth)^-0.858}. The depth use \code{\link{etopo2002}} and export depth was
 #' set to 100 m. The aragonite (aragsat) and calcite staturation states (calcsat) were calculated as carbonate concentration (co3) divided by
@@ -13,6 +13,6 @@
 #'
 #' @author Chih-Lin Wei <chihlinwei@@gmail.com>
 #' @docType data
-#' @name ArgentinaSSP126
+#' @name ArgentinaSSP585
 NULL
 

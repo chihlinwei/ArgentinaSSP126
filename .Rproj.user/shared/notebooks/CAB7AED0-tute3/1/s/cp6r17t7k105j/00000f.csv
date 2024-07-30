@@ -1,0 +1,8 @@
+"0","hist <- addLayer(etopo2022, cmip6_1950_2000_av)"
+"0","names(hist)[-1] <- gsub(""_av_1950_to_2000"", """", names(cmip6_1950_2000_av))"
+"0",""
+"0","proj1 <- addLayer(etopo2022, cmip6_2041_2060_av)"
+"0","names(proj1)[-1] <- gsub(""_av_2041_2060"", """", names(cmip6_2041_2060_av))"
+"0",""
+"0","proj2 <- addLayer(etopo2022, cmip6_2081_2100_av)"
+"0","names(proj2)[-1] <- gsub(""_av_2081_2100"", """", names(cmip6_2081_2100_av))"

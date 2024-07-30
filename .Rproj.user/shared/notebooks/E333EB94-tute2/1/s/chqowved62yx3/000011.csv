@@ -1,0 +1,4 @@
+"0","plot_fun(r=cmip6_2041_2060_voccMeg %>% subset(1:4) %>% mask(eez),"
+"0","         vt = c(""POC~flux~(km~yr^-1)"", ""DO~(km~yr^-1)"", ""pH~(km~yr^-1)"", ""Temperature~(km~yr^-1)""),"
+"0","         q_limits=c(0.01, 0.99)"
+"0","         )"

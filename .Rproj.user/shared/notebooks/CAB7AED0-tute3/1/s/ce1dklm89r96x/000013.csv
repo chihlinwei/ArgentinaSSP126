@@ -1,0 +1,1 @@
+"0","raster::extract(hist, occ[,c(""decimalLongitude"", ""decimalLatitude"")]) %>% head(5) %>% kable(digits=3)"

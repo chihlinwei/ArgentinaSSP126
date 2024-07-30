@@ -1,0 +1,39 @@
+"0","library(ArgentinaSSP126)"
+"2","載入需要的套件：raster
+"
+"2","載入需要的套件：sp
+"
+"0","library(ggplot2)"
+"0","library(dplyr)"
+"2","
+載入套件：‘dplyr’
+
+"
+"2","下列物件被遮斷自 ‘package:raster’:
+
+    intersect, select, union
+
+"
+"2","下列物件被遮斷自 ‘package:stats’:
+
+    filter, lag
+
+"
+"2","下列物件被遮斷自 ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+"
+"0","library(tidyr)"
+"2","
+載入套件：‘tidyr’
+
+"
+"2","下列物件被遮斷自 ‘package:raster’:
+
+    extract
+
+"
+"0","library(sf)"
+"2","Linking to GEOS 3.12.1, GDAL 3.8.4, PROJ 9.3.1; sf_use_s2() is TRUE
+"

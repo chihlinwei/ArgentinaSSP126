@@ -1,0 +1,7 @@
+"0","out <- cum_imp(cmip6_2041_2060_exsd) %>% mask_habitat"
+"0","out$var <- factor(out$var, labels=c(""Cumulative~negative~impact~(sigma)"", ""Cumulative~positivce~impact~(sigma)""))"
+"0",""
+"0","ggplot(data=out)+"
+"0","  geom_violin(aes(x=Habitat, y=value))+"
+"0","  facet_wrap(~var, scales=""free"", labeller=label_parsed)+"
+"0","  labs(y=""Cumulative Climate Change Impact"")"
