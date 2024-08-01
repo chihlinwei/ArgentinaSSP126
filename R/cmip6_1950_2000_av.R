@@ -18,7 +18,7 @@
 #'   \item{co3_av_1950_to_2000}{Mole Concentration of Carbonate expressed as Carbon in Sea Water (mol m-3)}
 #'   \item{co3satarag_av_1950_to_2000}{Carbonate ion concentration for seawater in equilibrium with pure aragonite (mol m-3)}
 #'   \item{co3satcalc_av_1950_to_2000}{Carbonate ion concentration for seawater in equilibrium with pure calcite (mol m-3)}
-#'   \item{aragsat_av_1950_to_2000}{Aragonite Saturation Statev(omega)}
+#'   \item{aragsat_av_1950_to_2000}{Aragonite Saturation State(omega)}
 #'   \item{calcsat_av_1950_to_2000}{Calcite Saturation State (omega)}
 #' }
 #' @source \url{https://esgf-node.llnl.gov/search/esgf-llnl/}
