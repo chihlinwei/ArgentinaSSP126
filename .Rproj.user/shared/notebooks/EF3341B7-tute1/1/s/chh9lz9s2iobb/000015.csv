@@ -1,0 +1,18 @@
+"0","library(ArgentinaSSP126)"
+"0","library(ggplot2)"
+"0","library(dplyr)"
+"0","library(patchwork)"
+"0","library(tidyr)"
+"0","library(RColorBrewer)"
+"0","library(sf)"
+"0","library(knitr)"
+"0","library(kableExtra)"
+"2","
+載入套件：‘kableExtra’
+
+"
+"2","下列物件被遮斷自 ‘package:dplyr’:
+
+    group_rows
+
+"
