@@ -1,3 +1,0 @@
-"0","plot_fun(r=cmip6_2041_2060_exsd %>% subset(1:4),"
-"0","         vt = c(""Delta~POC~flux~(sigma)"", ""Delta~DO~(sigma)"", ""Delta~pH~(sigma)"", ""Delta~Temperature~(sigma)""),"
-"0","         )"

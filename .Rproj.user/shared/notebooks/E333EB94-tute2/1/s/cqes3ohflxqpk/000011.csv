@@ -1,3 +1,0 @@
-"0","plot_fun(r=cum_imp(cmip6_2041_2060_voccMeg) %>% mask(eez), "
-"0","         vt=c(""Cumulative~negative~impact~(km~yr^-1)"", ""Cumulative~positivce~impact~(km~yr^-1)""),"
-"0","         q_limits = c(0, 0.99))"

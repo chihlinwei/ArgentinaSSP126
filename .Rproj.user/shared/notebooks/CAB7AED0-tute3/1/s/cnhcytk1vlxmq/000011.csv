@@ -1,7 +1,0 @@
-"0","library(knitr)"
-"0",""
-"0","head(hake[, c(6:7, 21)], 5) %>% kable"
-"2","Registered S3 method overwritten by 'rmarkdown':
-  method         from
-  print.paged_df     
-"

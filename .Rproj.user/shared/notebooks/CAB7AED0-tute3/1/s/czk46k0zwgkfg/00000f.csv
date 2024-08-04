@@ -1,53 +1,0 @@
-"0","library(robis)"
-"2","Registered S3 methods overwritten by 'htmltools':
-  method               from         
-  print.html           tools:rstudio
-  print.shiny.tag      tools:rstudio
-  print.shiny.tag.list tools:rstudio
-"
-"2","Registered S3 method overwritten by 'htmlwidgets':
-  method           from         
-  print.htmlwidget tools:rstudio
-"
-"2","Registered S3 method overwritten by 'data.table':
-  method           from
-  print.data.table     
-"
-"2","
-載入套件：‘robis’
-
-"
-"2","下列物件被遮斷自 ‘package:raster’:
-
-    area
-
-"
-"0","# Download OBIS data"
-"0","sponge <- occurrence(scientificname = ""Demospongiae"", areaid = 7)"
-"2","Retrieved 2617 records of approximately 2617 (100%)"
-"0","hake <- occurrence(scientificname = ""Merluccius hubbsi"", areaid = 7)"
-"2","Retrieved 5000 records of approximately 12993 (38%)"
-"2","Retrieved 10000 records of approximately 12993 (76%)"
-"2","Retrieved 12993 records of approximately 12993 (100%)"
-"0","shrimp <- occurrence(scientificname = ""Pleoticus muelleri"", areaid = 7)"
-"2","Retrieved 5000 records of approximately 12803 (39%)"
-"2","Retrieved 10000 records of approximately 12803 (78%)"
-"2","Retrieved 12803 records of approximately 12803 (100%)"
-"0","crab <- occurrence(scientificname = ""Lithodes santolla"", areaid = 7)"
-"2","Retrieved 5000 records of approximately 11583 (43%)"
-"2","Retrieved 10000 records of approximately 11583 (86%)"
-"2","Retrieved 11583 records of approximately 11583 (100%)"
-"0","skate <- occurrence(scientificname = ""Psammobatis normani"", areaid = 7)"
-"2","Retrieved 5000 records of approximately 7832 (63%)"
-"2","Retrieved 7832 records of approximately 7832 (100%)"
-"0","cwc <- as.data.frame(coral)[,c(""y"", ""x"", ""SPECIES"")]"
-"0","names(cwc) <- c(""decimalLatitude"", ""decimalLongitude"", ""scientificName"")"
-"0",""
-"0","# Combine all occurrence data"
-"0","occ <- rbind(hake[, c(6:7, 21)] %>% cbind(Taxa=""Argentine hake""), "
-"0","             shrimp[, c(6:7, 21)] %>% cbind(Taxa=""Argentina red shrimp""), "
-"0","             crab[, c(6:7, 21)] %>% cbind(Taxa=""Chilean king crab""), "
-"0","             skate[, c(6:7, 21)] %>% cbind(Taxa=""Shortfin sand skate""), "
-"0","             sponge[, c(2:3, 6)] %>% cbind(Taxa=""Demosponge""), "
-"0","             cwc %>% cbind(Taxa=""Coldwater coral"")"
-"0","             )"

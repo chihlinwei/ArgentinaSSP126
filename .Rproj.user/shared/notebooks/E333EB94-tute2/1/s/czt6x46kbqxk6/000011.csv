@@ -1,3 +1,0 @@
-"0","plot_fun(r=cum_imp(cmip6_2041_2060_exsd) %>% mask(eez),"
-"0","         vt=c(""Cumulative~negative~impact~(sigma)"", ""Cumulative~positivce~impact~(sigma)"")"
-"0","         )"

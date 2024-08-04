@@ -1,3 +1,0 @@
-"0","plot_fun(r = cmip6_1950_2000_av %>% subset(1:4), "
-"0","         vt = c(""POC~flux~(mgC~m^-2*d^-1)"", ""DO~(mol~m^-3)"", ""pH"", ""Temperature~(degree*C)""), "
-"0","         q_limits = c(0, 1))"

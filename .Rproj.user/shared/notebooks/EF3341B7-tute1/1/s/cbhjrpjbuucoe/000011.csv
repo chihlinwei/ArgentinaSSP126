@@ -1,3 +1,0 @@
-"0","all <- overlay(subset(cmip6_extoe_constant, 1:4), fun=max) %>% mask(eez)"
-"0","names(all) <- ""cmip6_extoe_constant"""
-"0","plot_fun(r=all, vt=""When~climate~change>2*sigma"", colours=brewer.pal(10, 'RdYlBu'), q_limits = c(0, 1))"
